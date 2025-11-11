@@ -49,6 +49,8 @@ class GraphVisualizer {
     this.nodeContainer = document.getElementById('graph-node-container');
     this.operationLog = document.getElementById('operation-log');
     this.modeGroup = document.getElementById('graph-mode-group');
+    this.distOverlay = document.getElementById('dist-overlay');
+    this.distList = document.getElementById('dist-list');
     this.graph = new Graph(false);
     this.positions = new Map(); // label -> { x, y, cx, cy }
     this.stepController = new AnimationStepController({
@@ -126,6 +128,18 @@ class GraphVisualizer {
       if (!s || !this.graph.nodes.has(s)) return;
       this.runPrim(s);
     });
+    const krBtn = document.getElementById('run-kruskal-btn');
+    if (krBtn) {
+      krBtn.addEventListener('click', () => {
+        this.runKruskal();
+      });
+    }
+    const floydBtn = document.getElementById('run-floyd-btn');
+    if (floydBtn) {
+      floydBtn.addEventListener('click', () => {
+        this.runFloyd();
+      });
+    }
     document.getElementById('run-bfs-btn').addEventListener('click', () => {
       const s = document.getElementById('bfs-start-input').value.trim() || this.graph.labels()[0];
       if (!s || !this.graph.nodes.has(s)) return;
@@ -148,6 +162,7 @@ class GraphVisualizer {
     this.canvas.innerHTML = '';
     this.operationLog.innerHTML = '<p class="log-empty">暂无步骤</p>';
     this.stepController.clear();
+    if (this.distList) this.distList.innerHTML = '<span class="dist-item">尚未运行</span>';
     this.updateDisplay();
   }
 
@@ -182,6 +197,18 @@ class GraphVisualizer {
     if (this.operationLog.querySelector('.log-empty')) this.operationLog.innerHTML = '';
     this.operationLog.appendChild(entry);
     this.operationLog.scrollTop = this.operationLog.scrollHeight;
+  }
+
+  updateDistOverlay(dist, current) {
+    if (!this.distOverlay || !this.distList || !dist) return;
+    const labels = this.graph.labels().slice();
+    const html = labels.map(l => {
+      const val = dist[l];
+      const valStr = Number.isFinite(val) ? String(val) : '∞';
+      const cls = (current === l) ? 'dist-item current' : 'dist-item';
+      return `<span class="${cls}" title="到 ${l} 的当前最短距离">${l}: ${valStr}</span>`;
+    }).join('');
+    this.distList.innerHTML = html || '<span class="dist-item">尚未运行</span>';
   }
 
   calculateLayout() {
@@ -262,6 +289,8 @@ class GraphVisualizer {
       text.setAttribute('y', String(midy - 4));
       text.setAttribute('fill', '#444');
       text.setAttribute('font-size', '12');
+      text.classList.add('graph-weight');
+      text.dataset.key = `${u}->${v}`;
       text.textContent = String(w);
       this.canvas.appendChild(text);
     };
@@ -333,6 +362,115 @@ class GraphVisualizer {
     this.addLog('Prim 执行完成', 'step');
   }
 
+  runKruskal() {
+    const labels = this.graph.labels();
+    if (!labels.length) return;
+    const steps = [];
+    if (this.graph.directed) {
+      steps.push({ message: '当前为有向图，Kruskal 通常用于无向图，这里将边按无向处理', snapshot: { mst: [] } });
+    } else {
+      steps.push({ message: '开始 Kruskal：按权重递增选择边，避免成环', snapshot: { mst: [] } });
+    }
+
+    // 并查集（DSU）初始化
+    const parent = new Map();
+    const rank = new Map();
+    for (const l of labels) { parent.set(l, l); rank.set(l, 0); }
+    const find = (x) => {
+      let p = parent.get(x);
+      if (p !== x) { p = find(p); parent.set(x, p); }
+      return p;
+    };
+    const union = (a, b) => {
+      let ra = find(a), rb = find(b);
+      if (ra === rb) return false;
+      const rka = rank.get(ra) || 0, rkb = rank.get(rb) || 0;
+      if (rka < rkb) parent.set(ra, rb);
+      else if (rka > rkb) parent.set(rb, ra);
+      else { parent.set(rb, ra); rank.set(ra, rka + 1); }
+      return true;
+    };
+
+    // 复制并排序边
+    const edges = this.graph.edges.slice().sort((a, b) => a.w - b.w);
+    const mst = [];
+    for (const e of edges) {
+      const u = e.u, v = e.v, w = e.w;
+      const ru = find(u), rv = find(v);
+      if (ru !== rv) {
+        union(u, v);
+        mst.push({ u, v, w });
+        steps.push({ message: `选择边 ${u} — ${v}（${w}）加入 MST`, highlightEdges: [[u, v]], highlightNodes: [u, v], snapshot: { mst: mst.slice() } });
+        if (mst.length === labels.length - 1) break;
+      } else {
+        steps.push({ message: `跳过边 ${u} — ${v}（${w}），避免成环`, highlightEdges: [[u, v]], highlightNodes: [u, v], snapshot: { mst: mst.slice() } });
+      }
+    }
+    if (mst.length < labels.length - 1) {
+      steps.push({ message: 'Kruskal 完成（图可能不连通，MST 不包含全部节点）', snapshot: { mst: mst.slice() } });
+    } else {
+      steps.push({ message: 'Kruskal 完成', snapshot: { mst: mst.slice() } });
+    }
+    this.stepController.setSteps('Kruskal（最小生成树）', steps);
+    this.addLog('Kruskal 执行完成', 'step');
+  }
+
+  runFloyd() {
+    const labels = this.graph.labels();
+    if (!labels.length) return;
+    const steps = [];
+
+    // 初始化距离矩阵
+    const dist = {};
+    labels.forEach(i => {
+      dist[i] = {};
+      labels.forEach(j => { dist[i][j] = (i === j) ? 0 : Infinity; });
+    });
+    // 由边初始化，处理有向/无向
+    for (const e of this.graph.edges) {
+      const u = e.u, v = e.v, w = e.w;
+      dist[u][v] = Math.min(dist[u][v], w);
+      if (!this.graph.directed) dist[v][u] = Math.min(dist[v][u], w);
+    }
+
+    const makeSnapshot = () => {
+      const snap = {};
+      labels.forEach(i => {
+        snap[i] = {};
+        labels.forEach(j => {
+          const val = dist[i][j];
+          snap[i][j] = Number.isFinite(val) ? val : '∞';
+        });
+      });
+      return { dist: snap };
+    };
+
+    steps.push({ message: '初始化距离矩阵', snapshot: makeSnapshot() });
+    // 三重循环松弛
+    for (const k of labels) {
+      steps.push({ message: `以中间点 ${k} 进行松弛`, highlightNodes: [k], snapshot: makeSnapshot() });
+      for (const i of labels) {
+        for (const j of labels) {
+          const dik = dist[i][k];
+          const dkj = dist[k][j];
+          if (Number.isFinite(dik) && Number.isFinite(dkj) && dik + dkj < dist[i][j]) {
+            const old = dist[i][j];
+            dist[i][j] = dik + dkj;
+            steps.push({
+              message: `更新 ${i} → ${j}：${Number.isFinite(old) ? old : '∞'} → ${dist[i][j]}（通过 ${k}）`,
+              highlightNodes: [i, k, j],
+              highlightEdges: [[i, k], [k, j]],
+              snapshot: makeSnapshot()
+            });
+          }
+        }
+      }
+    }
+    steps.push({ message: 'Floyd 完成', snapshot: makeSnapshot() });
+    this.stepController.setSteps('Floyd（全源最短路）', steps);
+    this.addLog('Floyd 执行完成', 'step');
+  }
+
   runBFS(start) {
     const visited = new Set([start]);
     const q = [start];
@@ -386,9 +524,16 @@ class GraphVisualizer {
   // ----- 步骤回调与高亮渲染 -----
   onStepChange(step) {
     if (!step) return;
+    this.clearHighlights();
     if (step.snapshot) this.renderSnapshot(step.snapshot);
     this.highlightNodes(step.highlightNodes || []);
     this.highlightEdges(step.highlightEdges || []);
+  }
+
+  clearHighlights() {
+    this.nodeContainer.querySelectorAll('.graph-node.rotating').forEach(el => el.classList.remove('rotating'));
+    this.canvas.querySelectorAll('line.graph-edge.rotating').forEach(el => el.classList.remove('rotating'));
+    this.canvas.querySelectorAll('text.graph-weight.rotating').forEach(el => el.classList.remove('rotating'));
   }
 
   async renderSnapshot(snapshot) {
@@ -402,7 +547,13 @@ class GraphVisualizer {
     if (snapshot.stack) parts.push(`stack: [${snapshot.stack.join(', ')}]`);
     if (snapshot.order) parts.push(`order: [${snapshot.order.join(', ')}]`);
     if (parts.length) this.addLog(parts.join(' | '), 'info');
-    await this.renderGraph(); // 保持画布与最新节点/边一致
+    if (snapshot.dist) {
+      const labels = this.graph.labels();
+      const d = snapshot.dist;
+      const firstVal = (labels.length && d) ? d[labels[0]] : undefined;
+      if (typeof firstVal === 'number') this.updateDistOverlay(d, snapshot.current);
+    }
+    // 算法步骤不改变图结构，这里不重绘画布，避免覆盖高亮
   }
 
   highlightNodes(labels) {
@@ -415,7 +566,9 @@ class GraphVisualizer {
   highlightEdges(edges) {
     edges.forEach(([u, v]) => {
       const line = this.canvas.querySelector(`line.graph-edge[data-key="${u}->${v}"]`) || this.canvas.querySelector(`line.graph-edge[data-key="${v}->${u}"]`);
+      const weight = this.canvas.querySelector(`text.graph-weight[data-key="${u}->${v}"]`) || this.canvas.querySelector(`text.graph-weight[data-key="${v}->${u}"]`);
       if (line) line.classList.add('rotating');
+      if (weight) weight.classList.add('rotating');
     });
   }
 

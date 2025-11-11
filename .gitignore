@@ -1,0 +1,8 @@
+# Ignore blog mirror directory; project repo should only track visualizer
+blueberrycongee.github.io/
+
+# Common OS/Editor junk
+Thumbs.db
+.DS_Store
+*.log
+~$*
