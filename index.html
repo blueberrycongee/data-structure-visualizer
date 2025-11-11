@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据结构可视化器 - 导航页</title>
+    <link rel="stylesheet" href="assets/css/home.css">
+</head>
+<body>
+    <div class="home-container">
+        <header class="header">
+            <a href="topics.html" class="back-link" style="position:absolute;left:20px;top:20px;">← 返回学科导航</a>
+            <h1>数据结构可视化器</h1>
+            <p class="subtitle">交互式学习数据结构与算法</p>
+        </header>
+
+        <main class="main-content">
+            <!-- 基础树结构 -->
+            <section class="data-structure-section">
+                <h2 class="section-title">基础树结构</h2>
+                <div class="card-grid">
+                    <div class="card" onclick="window.location.href='tree.html'">
+                        <div class="card-icon">🌳</div>
+                        <h3 class="card-title">二叉树</h3>
+                        <p class="card-description">真二叉树、完全二叉树、满二叉树、二叉搜索树、左式堆</p>
+                        <div class="card-status">已实现</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 高级搜索树 -->
+            <section class="data-structure-section">
+                <h2 class="section-title">高级搜索树</h2>
+                <div class="card-grid">
+                    <div class="card" onclick="window.location.href='avl.html'">
+                        <div class="card-icon">⚖️</div>
+                        <h3 class="card-title">AVL树</h3>
+                        <p class="card-description">自平衡二叉搜索树，通过旋转保持平衡</p>
+                        <div class="card-status">已实现</div>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='red-black.html'">
+                        <div class="card-icon">🔴</div>
+                        <h3 class="card-title">红黑树</h3>
+                        <p class="card-description">自平衡二叉搜索树，通过颜色标记保持平衡</p>
+                        <div class="card-status">已实现</div>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='b-tree.html'">
+                        <div class="card-icon">📚</div>
+                        <h3 class="card-title">B树</h3>
+                        <p class="card-description">多路平衡搜索树，常用于数据库和文件系统</p>
+                        <div class="card-status">已实现</div>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='b-plus-tree.html'">
+                        <div class="card-icon">📖</div>
+                        <h3 class="card-title">B+树</h3>
+                        <p class="card-description">B树的变种，所有数据存储在叶子节点</p>
+                        <div class="card-status">已实现</div>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='two-three-tree.html'">
+                        <div class="card-icon">🌿</div>
+                        <h3 class="card-title">2-3树</h3>
+                        <p class="card-description">每个节点可以有2个或3个子节点的平衡搜索树</p>
+                        <div class="card-status coming-soon">即将推出</div>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='splay-tree.html'">
+                        <div class="card-icon">🎯</div>
+                        <h3 class="card-title">伸展树</h3>
+                        <p class="card-description">自调整二叉搜索树，最近访问的节点移到根</p>
+                        <div class="card-status">已实现</div>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='treap.html'">
+                        <div class="card-icon">🎲</div>
+                        <h3 class="card-title">Treap</h3>
+                        <p class="card-description">树堆，结合二叉搜索树和堆的性质</p>
+                        <div class="card-status coming-soon">即将推出</div>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='trie.html'">
+                        <div class="card-icon">🔤</div>
+                        <h3 class="card-title">字典树</h3>
+                        <p class="card-description">前缀树，用于字符串搜索和匹配</p>
+                        <div class="card-status coming-soon">即将推出</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 其他数据结构 -->
+            <section class="data-structure-section">
+                <h2 class="section-title">其他数据结构</h2>
+                <div class="card-grid">
+                    <div class="card" onclick="window.location.href='graph.html'">
+                        <div class="card-icon">🕸️</div>
+                        <h3 class="card-title">图</h3>
+                        <p class="card-description">图算法：Dijkstra、Prim、BFS、DFS 可视化</p>
+                        <div class="card-status">已实现</div>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='heap.html'">
+                        <div class="card-icon">📊</div>
+                        <h3 class="card-title">堆</h3>
+                        <p class="card-description">最小/最大堆，可视化插入与删除堆顶</p>
+                        <div class="card-status">已实现</div>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='sorting.html'">
+                        <div class="card-icon">🔢</div>
+                        <h3 class="card-title">排序总览</h3>
+                        <p class="card-description">比较型与非比较型汇总，按性质筛选</p>
+                        <div class="card-status online" style="background:#4CAF50;color:#fff;">已上线</div>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='hash-table.html'">
+                        <div class="card-icon">🗂️</div>
+                        <h3 class="card-title">哈希表</h3>
+                        <p class="card-description">基于哈希函数实现快速查找的数据结构</p>
+                        <div class="card-status">已实现</div>
+                    </div>
+
+                    <div class="card" onclick="window.location.href='tournament.html'">
+                        <div class="card-icon">🏆</div>
+                        <h3 class="card-title">锦标赛树</h3>
+                        <p class="card-description">赢家树（最小/最大），构建与更新回溯可视化</p>
+                        <div class="card-status">已实现</div>
+                    </div>
+                    <div class="card" onclick="window.location.href='kmp.html'">
+                        <div class="card-icon">🔍</div>
+                        <h3 class="card-title">KMP 字符串匹配</h3>
+                        <p class="card-description">展示 next/nextval 表与逐步匹配回放</p>
+                        <div class="card-status">已实现</div>
+                    </div>
+                    <div class="card" onclick="window.location.href='bm.html'">
+                        <div class="card-icon">🧭</div>
+                        <h3 class="card-title">BM 字符串匹配</h3>
+                        <p class="card-description">BC/GS 表构建与右向左匹配回放</p>
+                        <div class="card-status">已实现</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>数据结构可视化器 © 2024</p>
+        </footer>
+    </div>
+</body>
+</html>
+
