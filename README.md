@@ -1,92 +1,95 @@
 # 数据结构可视化器
 
-一个交互式的数据结构与算法可视化工具，支持树结构与字符串匹配的学习与演示。
+交互式数据结构与算法演示平台，支持 AVL / 红黑树、哈希表、字符串匹配、流水线冲突、进制编码等模块，统一步进回放与字幕提示。
 
-## 功能特性
+## 功能速览
 
-### 1. 可视化树构建器
-- **链接手柄系统**：将鼠标悬停在节点上时，会显示三个方向的链接手柄（上、左、右）
-- **拖拽创建连接**：拖拽手柄可以创建节点之间的连接或创建新节点
-- **视觉反馈**：有效目标会高亮显示，无效目标会显示红色提示
+### 1. 树结构可视化
+- **AVL 树**：插入动画、旋转分步回放、字幕 3s 自动隐藏。
+- **红黑树**：插入修复、删除（含批量队列）、右键节点菜单、完整撤销。
+- **通用组件**：`AnimationStepController` 提供前进/回退、字幕自动隐藏、节点高亮。
 
-### 2. 实时结构识别
-自动识别以下树类型：
-- 真二叉树（Strict Binary Tree）
-- 完全二叉树（Complete Binary Tree）
-- 满二叉树（Full Binary Tree）
-- 二叉搜索树（Binary Search Tree）
-- 左式堆（Leftist Heap）
+### 2. 哈希表（开放寻址）
+- 支持线性/二次探测、懒惰删除、ASL 统计。
+- 仅接受整数键，哈希为 `key mod bucketCount`；负数统一取模到正区间。
 
-### 3. 交互式学习模式
-- **树类型选择器**：左侧边栏可以选择目标树类型
-- **智能提示系统**：根据选择的树类型提供构建建议
-- **属性面板**：右侧面板显示树的详细属性
+### 3. 字符串匹配
+- **BM**：坏字符 + 好后缀双表，滑窗对齐动画。
+- **KMP**：next / nextval 表计算与匹配回放。
 
-### 4. 高级功能
-- **树结构验证**：实时验证树的结构合法性
-- **性能分析**：显示搜索、插入、删除操作的时间复杂度
-- **导出功能**：支持导出为JSON或PNG图片
+### 4. 计算机组成原理
+- **IEEE 754**：32/64 位浮点编码、手算过程。
+- **进制转换**：二进制/八进制/十六进制互转，按 4 位分组与权重求和演示。
+- **有符号整数**：原码、反码、补码手算步骤。
+- **流水线冲突**：五级流水（IF/ID/EX/MEM/WB），支持转发开关与分支解析阶段选择，自动标注数据/控制冒险与气泡数。
 
-### 2. 字符串匹配（新增）
-- **BM（Boyer–Moore）**：支持坏字符（BC）、好后缀（GS）两表计算与匹配回放；提供三种模式（综合 / 仅 BC / 仅 GS）。
-- **KMP（Knuth–Morris–Pratt）**：支持 next / nextval 表计算与匹配回放。
-- **滑窗移动动画**：P 行会根据当前滑窗起点（BM 的 `i`，KMP 的 `i - j`）平滑右移，以直观展示对齐关系。
-- **步骤控制**：使用“前进/回退”逐步查看比较、失配/跳转、移动与成功匹配等步骤，高亮相关格子与表项。
+### 5. 学科总导航
+- 入口：`topics.html`，卡片式导航至各模块。
+- 占位页：`arch.html`（组成）、`os.html`（OS）、`network.html`（网络）已预留结构。
 
-## 使用方法
+## 本地运行
 
-1. **创建节点**：点击画布空白区域创建根节点
-2. **连接节点**：
-   - 将鼠标悬停在节点上显示链接手柄
-   - 拖拽左侧手柄创建左孩子
-   - 拖拽右侧手柄创建右孩子
-   - 拖拽上方手柄创建父节点
-3. **移动节点**：直接拖拽节点可以移动位置
-4. **查看属性**：右侧面板实时显示树的属性和类型
-5. **导出数据**：点击导出按钮可以保存树结构
+1. 克隆仓库
+```bash
+git clone https://github.com/blueberrycongee/data-structure-visualizer.git
+cd data-structure-visualizer
+```
 
-### 打开页面
-- 主页：`index.html`
-- BM：`bm.html`（先计算 BC/GS，再选择运行模式并用前进/回退查看）
-- KMP：`kmp.html`（先计算 next/nextval，再选择其一运行并用前进/回退查看）
+2. 启动静态服务器（任选其一）
+```bash
+# Python 3
+python -m http.server 8000
+# Node
+npx serve -s .
+```
+
+3. 浏览器访问
+- 总导航：`http://localhost:8000/topics.html`
+- AVL：`/avl.html`
+- 红黑树：`/red-black.html`
+- 哈希表：`/hash-table.html`
+- 字符串匹配：`/bm.html`、`/kmp.html`
+- 流水线：`/pipeline.html`
+- 编码系列：`/encoding.html` → 子页面
 
 ## 技术栈
+- 原生 HTML / CSS / ES6+
+- 零第三方运行时依赖（除 `html2canvas` 用于导出截图）
+- 统一资源路径：`assets/css/`、`assets/js/`
 
-- HTML5
-- CSS3
-- JavaScript (ES6+)
-- html2canvas (用于图片导出)
-
-## 浏览器支持
-
-支持所有现代浏览器（Chrome、Firefox、Safari、Edge）
-
-## 文件结构
-
+## 项目结构
 ```
-Data Structure Visualizer/
+data-structure-visualizer/
 ├── assets/
-│   ├── css/                      # 全部样式文件（home.css, styles.css, …）
-│   └── js/                       # 全部脚本文件（app.js, animation-controller.js, …）
-├── *.html                        # 各功能页面（引用 assets 路径）
-└── README.md                     # 说明文档（本文件）
+│   ├── css/          # 全局与模块样式
+│   └── js/           # 通用控制器与各算法实现
+├── *.html            # 功能页面
+├── progress-report.md # 开发进度与接口文档
+└── README.md         # 本文件
 ```
 
-## 开始使用
+## 通用接口（可复用）
 
-直接在浏览器中打开 `index.html` 文件即可使用。
-
-### 引用示例（统一资源路径）
-
-在各页面中使用统一的 `assets` 路径引入样式与脚本：
-
-```html
-<link rel="stylesheet" href="assets/css/home.css">
-<script src="assets/js/animation-controller.js"></script>
+### AnimationStepController
+```js
+const ctrl = new AnimationStepController({
+  nodeContainer: document.getElementById('nodes'),
+  canvas: document.getElementById('lines'),
+  overlayAutoHideMs: 3000,
+  onStep: (step, idx) => { /* 自定义渲染 */ }
+});
+ctrl.bindControls(prevBtn, nextBtn);
+ctrl.setSteps('标题', steps);
 ```
 
-### 约定与命名
+### 步骤约定
+```ts
+interface Step {
+  message: string;
+  highlightValues?: number[];
+  snapshot?: any;
+}
+```
 
-- 保持原有文件名，仅更改为 `assets/css` 与 `assets/js` 路径。
-- 新增页面与资源请分别放入对应目录，并以相对路径引用。
+更多细节见 `progress-report.md`。
 

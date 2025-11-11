@@ -245,6 +245,8 @@ this.stepController.setSteps('插入过程', steps);
 - 本地访问：`http://localhost:8000/pipeline.html`。
 - 示例：
   - 开启转发：`ADD R1,R2,R3` → `SUB R4,R1,R5` 无气泡；`LW R6,0(R1)` → `ADD R7,R6,R8` 插入 1 气泡。
+  - 关闭转发：上述两例分别插入 2 气泡与 2 气泡。
+  - 分支：`BEQ R1,R0,T` 后一条指令插入 1（或 2）气泡。
 
 ## 15. 指令与编码模块 UI 一致性改造（新增）
 **范围**：`encoding.html` 聚合页、`instruction-format.html` 页面完成栅格宽屏与统一视觉改造；`bases.html` 与 `integer.html` 已在前次迭代完成。
@@ -271,5 +273,3 @@ this.stepController.setSteps('插入过程', steps);
 **后续建议**
 - 继续对齐：`ieee754.html`、`hamming.html` 两页的栅格宽屏与视觉统一。
 - 增补：聚合页可添加分组 chips 与模块卡片的 hover/active 状态，提高导航可扫描性。
-  - 关闭转发：上述两例分别插入 2 气泡与 2 气泡。
-  - 分支：`BEQ R1,R0,T` 后一条指令插入 1（或 2）气泡。
