@@ -1,0 +1,184 @@
+/* Global Theme Toggle & Light Mode Overrides */
+/* Design: minimal, 8px grid, <=2 fonts, <=3 colors, <=300ms transitions */
+
+:root {
+  --toggle-fg: #e6edf3;
+  --toggle-bg: rgba(255,255,255,0.05);
+  --toggle-border: rgba(230, 237, 243, 0.18);
+  --toggle-shadow: 0 0 0 1px #000, 0 6px 18px rgba(0,0,0,0.35);
+  --toggle-radius: 12px;
+  --g1: 8px; --g2: 16px; --g3: 24px;
+  --duration: 200ms;
+}
+
+/* Fixed toggle button (top-right), independent of page layout */
+.theme-toggle {
+  position: fixed; top: var(--g2); right: var(--g2);
+  z-index: 10000; display: inline-flex; align-items: center; gap: 10px;
+  color: var(--toggle-fg); background: var(--toggle-bg);
+  border: 1px solid var(--toggle-border); border-radius: var(--toggle-radius);
+  padding: 8px 12px; backdrop-filter: blur(6px) saturate(1.2);
+  box-shadow: var(--toggle-shadow);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px; letter-spacing: 0.02em;
+  cursor: pointer; user-select: none;
+  transition: border-color var(--duration) ease, transform var(--duration) ease;
+}
+.theme-toggle:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.3); }
+.theme-toggle:active { transform: translateY(0); }
+.theme-toggle .icon { width: 18px; height: 18px; display: inline-grid; place-items: center; }
+.theme-toggle .icon::before { content: "🌙"; }
+.theme-toggle.is-light .icon::before { content: "☀️"; }
+.theme-toggle .label { opacity: 0.8; }
+
+/* Base light mode overrides for legacy pages not using CSS variables */
+html.theme-light body {
+  background: #f7f9fc !important;
+  color: #0b1220 !important;
+}
+
+/* Common text elements */
+html.theme-light h1, html.theme-light h2, html.theme-light h3,
+html.theme-light h4, html.theme-light h5, html.theme-light h6 {
+  color: #0b1220 !important;
+}
+html.theme-light p, html.theme-light small, html.theme-light span, html.theme-light li {
+  color: #1f2937 !important;
+}
+
+/* Home-page cards (home.css style) */
+html.theme-light .header, html.theme-light .section-title, html.theme-light .footer {
+  color: #0b1220 !important;
+}
+html.theme-light .card-title { color: #0b1220 !important; }
+html.theme-light .card-description { color: #475569 !important; }
+html.theme-light .card, html.theme-light .card-grid .card {
+  background: #ffffff !important;
+  border-color: #e6eaf2 !important;
+}
+html.theme-light .status-tag, html.theme-light .card-status {
+  border-color: #e6eaf2 !important;
+  color: #334155 !important;
+}
+
+/* Back links / buttons */
+html.theme-light .back-link, html.theme-light .to-topics {
+  color: #0b1220 !important;
+  border-color: #cbd5e1 !important;
+  background: rgba(255,255,255,0.85) !important;
+}
+html.theme-light .back-link:hover, html.theme-light .to-topics:hover {
+  background: #ffffff !important;
+}
+
+/* Interactive pages (styles.css) sidebar/header subtle adjustments */
+html.theme-light .sidebar { background: #f1f5f9 !important; color: #0b1220 !important; }
+html.theme-light .canvas-header { background: rgba(255,255,255,0.92) !important; color: #0b1220 !important; }
+html.theme-light .hint-box { background: #ffffff !important; border-color: #e5e7eb !important; color: #1f2937 !important; }
+
+/* Ensure SVG canvases maintain contrast in light mode */
+html.theme-light svg text { fill: #0b1220 !important; }
+html.theme-light svg line, html.theme-light svg path { stroke: #334155; }
+
+/* Unified Dark Mode (topics palette) */
+html:not(.theme-light) {
+  --bg: #0b0f14;
+  --fg: #e6edf3;
+  --accent: #00c2ff;
+  --muted: rgba(230, 237, 243, 0.64);
+  --surface: rgba(230, 237, 243, 0.05);
+  --surface-hover: rgba(230, 237, 243, 0.08);
+  --line: rgba(230, 237, 243, 0.12);
+  --line-strong: rgba(230, 237, 243, 0.18);
+}
+
+/* Base dark mode overrides */
+html:not(.theme-light) body {
+  background: var(--bg) !important;
+  color: var(--fg) !important;
+}
+html:not(.theme-light) h1,
+html:not(.theme-light) h2,
+html:not(.theme-light) h3,
+html:not(.theme-light) h4,
+html:not(.theme-light) h5,
+html:not(.theme-light) h6 { color: var(--fg) !important; }
+html:not(.theme-light) p,
+html:not(.theme-light) small,
+html:not(.theme-light) span,
+html:not(.theme-light) li { color: var(--muted) !important; }
+
+/* Back links / buttons adopt topics accent */
+html:not(.theme-light) .back-link,
+html:not(.theme-light) .to-topics {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  background: var(--surface) !important;
+}
+html:not(.theme-light) .back-link:hover,
+html:not(.theme-light) .to-topics:hover {
+  background: var(--surface-hover) !important;
+}
+
+/* Interactive pages common layout (styles.css & siblings) */
+html:not(.theme-light) .sidebar {
+  background: var(--surface) !important;
+  color: var(--fg) !important;
+  border-right: 1px solid var(--line);
+  box-shadow: none !important;
+}
+html:not(.theme-light) .sidebar h2,
+html:not(.theme-light) .sidebar h3 { color: var(--fg) !important; }
+html:not(.theme-light) .canvas-container {
+  background: var(--bg) !important;
+  color: var(--fg) !important;
+}
+html:not(.theme-light) .canvas-header {
+  background: var(--surface) !important;
+  color: var(--fg) !important;
+  box-shadow: none !important;
+  border-bottom: 1px solid var(--line);
+}
+html:not(.theme-light) .hint-box {
+  background: var(--surface) !important;
+  border-left: 3px solid var(--accent) !important;
+  color: var(--muted) !important;
+}
+
+/* Panels and items */
+html:not(.theme-light) .property-panel,
+html:not(.theme-light) .performance-panel,
+html:not(.theme-light) .export-panel,
+html:not(.theme-light) .validation-panel,
+html:not(.theme-light) .info-panel {
+  background: var(--surface) !important;
+  color: var(--fg) !important;
+  border: 1px solid var(--line);
+}
+html:not(.theme-light) .property-item,
+html:not(.theme-light) .operation-log { background: var(--surface-hover) !important; color: var(--muted) !important; border: 1px solid var(--line); }
+html:not(.theme-light) .log-entry { color: var(--muted) !important; border-bottom: 1px solid var(--line); }
+
+/* Inputs & focus */
+html:not(.theme-light) .input-field { background: var(--bg) !important; color: var(--fg) !important; border-color: var(--line) !important; }
+html:not(.theme-light) .input-field:focus { border-color: var(--accent) !important; }
+
+/* SVG canvas contrast */
+html:not(.theme-light) svg text { fill: var(--fg) !important; }
+html:not(.theme-light) svg line,
+html:not(.theme-light) svg path { stroke: var(--muted) !important; }
+
+/* Graph/Tree nodes basic appearance in dark */
+html:not(.theme-light) .graph-node { background: var(--surface) !important; border: 1px solid var(--line) !important; color: var(--fg) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.35) !important; }
+html:not(.theme-light) .graph-node.rotating { border-color: var(--accent) !important; color: var(--accent) !important; }
+
+/* Home page cards adopt topics palette */
+html:not(.theme-light) .header,
+html:not(.theme-light) .section-title,
+html:not(.theme-light) .footer { color: var(--fg) !important; }
+html:not(.theme-light) .card,
+html:not(.theme-light) .card-grid .card { background: var(--surface) !important; border: 1px solid var(--line) !important; box-shadow: none !important; }
+html:not(.theme-light) .card-title { color: var(--fg) !important; }
+html:not(.theme-light) .card-description { color: var(--muted) !important; }
+html:not(.theme-light) .card-status { background: transparent !important; color: var(--muted) !important; border: 1px solid var(--line) !important; }
+html:not(.theme-light) .card-status.coming-soon { border-color: var(--accent) !important; color: var(--accent) !important; }
