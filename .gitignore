@@ -6,3 +6,7 @@ Thumbs.db
 .DS_Store
 *.log
 ~$*
+
+# Project directories to ignore
+/diary/
+/scripts/
