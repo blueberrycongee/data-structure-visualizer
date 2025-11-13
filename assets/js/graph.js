@@ -99,8 +99,8 @@ class GraphVisualizer {
       const u = document.getElementById('edge-from-input').value.trim();
       const v = document.getElementById('edge-to-input').value.trim();
       const w = parseFloat(document.getElementById('edge-weight-input').value.trim());
-      if (!u || !v) return;
-      if (!this.graph.nodes.has(u) || !this.graph.nodes.has(v)) return;
+      if (!u || !v) { this.addLog('请输入两个有效的节点标签', 'error'); return; }
+      if (!this.graph.nodes.has(u) || !this.graph.nodes.has(v)) { this.addLog('节点不存在，无法添加边', 'error'); return; }
       this.graph.addEdge(u, v, Number.isFinite(w) ? w : 1);
       document.getElementById('edge-from-input').value = '';
       document.getElementById('edge-to-input').value = '';
@@ -129,12 +129,12 @@ class GraphVisualizer {
     // 算法按钮
     document.getElementById('run-dijkstra-btn').addEventListener('click', () => {
       const s = document.getElementById('algo-start-input').value.trim() || this.graph.labels()[0];
-      if (!s || !this.graph.nodes.has(s)) return;
+      if (!s || !this.graph.nodes.has(s)) { this.addLog('起点无效，请输入已存在的节点', 'error'); return; }
       this.runDijkstra(s);
     });
     document.getElementById('run-prim-btn').addEventListener('click', () => {
       const s = document.getElementById('prim-start-input').value.trim() || this.graph.labels()[0];
-      if (!s || !this.graph.nodes.has(s)) return;
+      if (!s || !this.graph.nodes.has(s)) { this.addLog('起点无效，请输入已存在的节点', 'error'); return; }
       this.runPrim(s);
     });
     const krBtn = document.getElementById('run-kruskal-btn');
@@ -153,7 +153,7 @@ class GraphVisualizer {
     if (bellmanBtn) {
       bellmanBtn.addEventListener('click', () => {
         const s = document.getElementById('bellman-start-input').value.trim() || this.graph.labels()[0];
-        if (!s || !this.graph.nodes.has(s)) return;
+        if (!s || !this.graph.nodes.has(s)) { this.addLog('起点无效，请输入已存在的节点', 'error'); return; }
         this.runBellmanFord(s);
       });
     }
@@ -165,18 +165,19 @@ class GraphVisualizer {
     }
     document.getElementById('run-bfs-btn').addEventListener('click', () => {
       const s = document.getElementById('bfs-start-input').value.trim() || this.graph.labels()[0];
-      if (!s || !this.graph.nodes.has(s)) return;
+      if (!s || !this.graph.nodes.has(s)) { this.addLog('起点无效，请输入已存在的节点', 'error'); return; }
       this.runBFS(s);
     });
     document.getElementById('run-dfs-btn').addEventListener('click', () => {
       const s = document.getElementById('dfs-start-input').value.trim() || this.graph.labels()[0];
-      if (!s || !this.graph.nodes.has(s)) return;
+      if (!s || !this.graph.nodes.has(s)) { this.addLog('起点无效，请输入已存在的节点', 'error'); return; }
       this.runDFS(s);
     });
 
     const prevBtn = document.getElementById('step-prev-btn');
     const nextBtn = document.getElementById('step-next-btn');
     if (prevBtn && nextBtn) this.stepController.bindControls(prevBtn, nextBtn);
+    this.stepController.bindKeyboard({ prevKey: 'ArrowLeft', nextKey: 'ArrowRight' });
   }
 
   clearGraph() {

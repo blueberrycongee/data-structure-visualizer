@@ -248,6 +248,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
   stepController.bindControls(document.getElementById('step-prev-btn'), document.getElementById('step-next-btn'));
+  stepController.bindKeyboard({ prevKey: 'ArrowLeft', nextKey: 'ArrowRight' });
 
   const textInput = document.getElementById('bm-text');
   const patternInput = document.getElementById('bm-pattern');
@@ -262,13 +263,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const ensureInputs = () => {
     const T = (textInput.value||'').trim(); const P = (patternInput.value||'').trim();
-    if (!T || !P) { alert('请输入文本串 T 与模式串 P'); return null; }
+    if (!T || !P) { renderer.appendLog('请输入文本串 T 与模式串 P'); return null; }
     return { t:T, p:P };
   };
 
   const buildTables = () => {
     const { p = '' } = { p: (patternInput.value||'').trim() };
-    if (!p) { alert('请输入模式串 P'); return; }
+    if (!p) { renderer.appendLog('请输入模式串 P'); return; }
     renderer.clearTables(); renderer.clearLog(); renderer.setShift(undefined); renderer.setIJ(undefined, undefined);
     _bc = BMAlgo.buildBC(p); const { gs, suffix, prefix } = BMAlgo.buildGS(p); _gs = gs; _suffix = suffix; _prefix = prefix; _pattern = p;
     renderer.renderPattern(p); // 保留/刷新模式行
