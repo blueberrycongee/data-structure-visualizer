@@ -216,6 +216,7 @@ html:not(.theme-light) .log-entry.step { color: var(--accent) !important; }
 html:not(.theme-light) .algo-explain { background: var(--surface) !important; border-left: 3px solid var(--accent) !important; color: var(--muted) !important; }
 
 html:not(.theme-light) .control-btn { background: var(--surface) !important; color: var(--fg) !important; border: 1px solid var(--line) !important; }
+html:not(.theme-light) .info-panel { background: var(--surface) !important; border: 1px solid var(--line) !important; }
 
 /* Dark inputs for legacy classes */
 html:not(.theme-light) .text-input,
