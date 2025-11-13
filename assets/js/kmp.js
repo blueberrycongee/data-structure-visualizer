@@ -39,27 +39,29 @@ class KMP {
     const log = (msg) => steps.push({ type: 'log', message: msg });
 
     log(`开始使用 ${tableName} 表进行匹配`);
-    while (i < t.length && j < p.length) {
-      steps.push({
-        type: 'compare',
-        i, j,
-        chars: { ti: t[i], pj: p[j] },
-        tableName,
-      });
+    while (i < t.length) {
       if (j === -1 || t[i] === p[j]) {
-        log(j === -1 ? `j = -1，i++，j=0` : `匹配：T[${i}] == P[${j}]，i++，j++`);
+        if (j >= 0) {
+          steps.push({ type: 'compare', i, j, chars: { ti: t[i], pj: p[j] }, tableName });
+          log(`匹配：T[${i}] == P[${j}]，i++，j++`);
+        } else {
+          log(`j = -1，i++，j=0`);
+        }
         i++; j++;
+        if (j === p.length) {
+          log(`匹配成功：起始位置为 ${i - j}`);
+          steps.push({ type: 'success', start: i - j, length: p.length });
+          j = table[j - 1];
+        }
       } else {
+        steps.push({ type: 'compare', i, j, chars: { ti: t[i], pj: p[j] }, tableName });
         const oldJ = j;
         j = table[j];
         log(`失配：T[${i}] != P[${oldJ}]，j = ${tableName}[${oldJ}] -> ${j}`);
         steps.push({ type: 'jump', i, j, fromJ: oldJ, toJ: j, tableName });
       }
     }
-    if (j === p.length) {
-      log(`匹配成功：起始位置为 ${i - j}`);
-      steps.push({ type: 'success', start: i - j, length: p.length });
-    } else {
+    if (!steps.some(s => s.type === 'success')) {
       log(`匹配失败：未找到完整匹配`);
       steps.push({ type: 'fail' });
     }
@@ -265,7 +267,8 @@ window.addEventListener('DOMContentLoaded', () => {
         renderer.appendLog(`成功匹配：起始位置 ${step.start}，长度 ${step.length}`);
         renderer.setWindow(step.start);
         renderer.highlightSuccess(step.start, step.length);
-        renderer.setMatchCount(renderer.matches + 1);
+        renderer.matches += 1;
+        renderer.setMatchCount(renderer.matches);
         return;
       }
       if (step.type === 'fail') {
