@@ -32,7 +32,7 @@
   <script>
     (function(){
       function qs(key){ var s=location.search.replace(/^\?/,'').split('&').filter(Boolean).map(function(p){ var i=p.indexOf('='); return [decodeURIComponent(p.slice(0,i)), decodeURIComponent(p.slice(i+1))]; }); var o={}; s.forEach(function(kv){ o[kv[0]]=kv[1]; }); return o[key]; }
-      var ref = qs('ref'); if(ref){ var header=document.querySelector('.header'); var a=document.createElement('a'); a.className='back-link'; a.textContent='← 返回刷题'; a.href=ref; a.style.position='absolute'; a.style.right='20px'; a.style.top='20px'; header.appendChild(a); }
+      var ref = qs('ref'); if(ref){ var a=document.createElement('a'); a.className='floating-ref-btn'; a.textContent='← 返回刷题'; var href=ref; if(!/^https?:\/\//i.test(href) && !/^\//.test(href)){ href='../'+href.replace(/^\.\/?/,''); } a.href=href; document.body.appendChild(a); }
     })();
   </script>
   <script src="../assets/js/theme.js"></script>

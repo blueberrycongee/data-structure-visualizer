@@ -116,8 +116,20 @@
     empty && empty.classList.add('hidden');
     var prof = loadProf();
     container.innerHTML = p.questions.map(function(q,idx){
-      var tagsHTML = (q.tags||[]).map(function(t){ var href = mapTag(t); var a = href?('<a class="pill" href="'+href+'">'+t+'</a>'):('<span class="pill">'+t+'</span>'); return a; }).join('');
-      var learnHref = null; (q.tags||[]).some(function(t){ var h = mapTag(t); if(h){ var paper = qs('paper')||''; var parts = String(h).split('#'); var base=parts[0]; var hash = parts[1]?('#'+parts[1]):''; var ref = 'exam-viewer.html?paper='+encodeURIComponent(paper)+'&goto='+idx; var join = base.indexOf('?')>-1 ? '&' : '?'; learnHref = base + join + 'ref='+ encodeURIComponent(ref) + hash; return true; } return false; });
+      var tagsHTML = (q.tags||[]).map(function(t){
+        var href = mapTag(t);
+        if(href){
+          var paper = qs('paper')||'';
+          var parts = String(href).split('#');
+          var base=parts[0]; var hash = parts[1]?('#'+parts[1]):'';
+          var ref = '/exam-viewer.html?paper='+encodeURIComponent(paper)+'&goto='+idx;
+          var join = base.indexOf('?')>-1 ? '&' : '?';
+          var link = base + join + 'ref='+ encodeURIComponent(ref) + hash;
+          return '<a class="pill" href="'+link+'">'+t+'</a>';
+        }
+        return '<span class="pill">'+t+'</span>';
+      }).join('');
+      var learnHref = null; (q.tags||[]).some(function(t){ var h = mapTag(t); if(h){ var paper = qs('paper')||''; var parts = String(h).split('#'); var base=parts[0]; var hash = parts[1]?('#'+parts[1]):''; var ref = '/exam-viewer.html?paper='+encodeURIComponent(paper)+'&goto='+idx; var join = base.indexOf('?')>-1 ? '&' : '?'; learnHref = base + join + 'ref='+ encodeURIComponent(ref) + hash; return true; } return false; });
       var optsHTML = (q.options||[]).length?('<div class="q-options">'+q.options.map(function(o){ return '<div>'+esc(o)+'</div>'; }).join('')+'</div>'):'';
       var meta = [q.difficulty?('难度：'+q.difficulty):'', (q.knowledge||'')].filter(Boolean).join(' · ');
       var solBtn = '<div class="q-ops"><button class="btn btn-sol" data-toggle="sol" data-idx="'+idx+'">解析</button>'+ (learnHref?('<a class="btn" href="'+learnHref+'">去学</a>'):'') +'</div>';

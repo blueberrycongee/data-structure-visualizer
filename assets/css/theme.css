@@ -323,3 +323,6 @@ html:not(.theme-light) .card-title { color: var(--fg) !important; }
 html:not(.theme-light) .card-description { color: var(--muted) !important; }
 html:not(.theme-light) .card-status { background: transparent !important; color: var(--muted) !important; border: 1px solid var(--line) !important; }
 html:not(.theme-light) .card-status.coming-soon { border-color: var(--accent) !important; color: var(--accent) !important; }
+ .floating-ref-btn{ position:fixed; right:24px; top:50%; transform:translateY(-50%); padding:8px 14px; border-radius:9999px; background:linear-gradient(135deg,#00c8ff,#7aa2ff); color:#fff; text-decoration:none; font-weight:600; box-shadow:0 8px 20px rgba(0,0,0,0.12); border:0; z-index:10000; letter-spacing:0.2px }
+ .floating-ref-btn:hover{ filter:brightness(1.08); box-shadow:0 10px 24px rgba(0,0,0,0.16) }
+ @media (max-width: 768px){ .floating-ref-btn{ right:16px; top:auto; bottom:18px; transform:none; padding:10px 16px } }
