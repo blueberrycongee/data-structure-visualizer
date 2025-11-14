@@ -26,20 +26,28 @@
     </header>
     <main class="main-content">
       <section class="content-section">
-        <div class="k-nav">
-          <a class="k-link" href="md.html?file=log%20%F0%9F%8C%9F%20n.md&from=ds">迭代对数（log*）</a>
-        </div>
+        <div class="k-nav" id="ds-files"></div>
         <div class="k-item"><div class="k-title">暂未整理</div><div class="k-body">该学科的其他知识点后续补充。</div></div>
       </section>
     </main>
     <footer class="footer"><p>知识点库 © 2024</p></footer>
   </div>
-  <script>
-    (function(){
-      function qs(key){ var s=location.search.replace(/^\?/,'').split('&').filter(Boolean).map(function(p){ var i=p.indexOf('='); return [decodeURIComponent(p.slice(0,i)), decodeURIComponent(p.slice(i+1))]; }); var o={}; s.forEach(function(kv){ o[kv[0]]=kv[1]; }); return o[key]; }
-      var ref = qs('ref'); if(ref){ var a=document.createElement('a'); a.className='floating-ref-btn'; a.textContent='← 返回刷题'; var href=ref; if(!/^https?:\/\//i.test(href) && !/^\//.test(href)){ href='../'+href.replace(/^\.\/?/,''); } a.href=href; document.body.appendChild(a); }
-    })();
-  </script>
+    <script>
+      (function(){
+        function qs(key){ var s=location.search.replace(/^\?/,'').split('&').filter(Boolean).map(function(p){ var i=p.indexOf('='); return [decodeURIComponent(p.slice(0,i)), decodeURIComponent(p.slice(i+1))]; }); var o={}; s.forEach(function(kv){ o[kv[0]]=kv[1]; }); return o[key]; }
+        function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        var ref = qs('ref'); if(ref){ var a=document.createElement('a'); a.className='floating-ref-btn'; a.textContent='← 返回刷题'; var href=ref; if(!/^https?:\/\//i.test(href) && !/^\//.test(href)){ href='../'+href.replace(/^\.\/?/,''); } a.href=href; document.body.appendChild(a); }
+
+        var box=document.getElementById('ds-files');
+        fetch('/_knowledge_ds.json').then(function(r){ if(!r.ok) throw new Error('x'); return r.json(); }).then(function(list){
+          var html = (list||[]).map(function(it){
+            var nm = String(it.name||''); var title = it.title || nm; var href = 'md.html?file='+ encodeURIComponent('ds/'+nm) + '&from=ds' + (ref?('&ref='+encodeURIComponent(ref)):'');
+            return '<a class="k-link" href="'+href+'">'+ esc(title) +'</a>';
+          }).join('');
+          box.innerHTML = html || '<div class="notice">该目录暂无 Markdown 文件</div>';
+        }).catch(function(){ box.innerHTML = '<div class="notice">无法读取目录列表</div>'; });
+      })();
+    </script>
   <script src="../assets/js/theme.js"></script>
 </body>
 </html>
