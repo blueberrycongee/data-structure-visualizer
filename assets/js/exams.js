@@ -3,19 +3,25 @@
     var s = location.search.replace(/^\?/, '').split('&').filter(Boolean).map(function(p){ var i=p.indexOf('='); return [decodeURIComponent(p.slice(0,i)), decodeURIComponent(p.slice(i+1))]; });
     var o={}; s.forEach(function(kv){ o[kv[0]] = kv[1]; }); return o[key];
   }
-  function mapTag(t){
-    var m={
-      'CRC':'network-link.html#crc','成帧':'network-link.html#framing','滑动窗口':'network-link.html#sliding-window','GBN':'network-link.html#gbn','SR':'network-link.html#sr',
-      'ALOHA':'network-link.html#mac-random','CSMA':'network-link.html#mac-random','CSMA/CD':'network-link.html#csma-cd-ethernet','以太网':'network-link.html#csma-cd-ethernet',
-      '奈奎斯特':'network-physical.html#quick-formulas','香农':'network-physical.html#quick-formulas','曼彻斯特':'network-physical.html#coding-modulation','多路复用':'network-physical.html#multiplexing',
-      'OSI':'network-models.html#osi','TCP/IP':'network-models.html#tcp-ip','IETF':'network-models.html#standards',
-      'RTT':'network-performance.html#delays','吞吐量':'network-performance.html#window-formulas'
-    };
-    return m[t] || null;
-  }
+  function mapTag(t){ var idx = (window.KNOWLEDGE_INDEX || {}); return idx[t] || null; }
   function textToLines(txt){ return (txt||'').replace(/\r\n/g,'\n').split('\n'); }
   function trim(s){ return (s||'').replace(/^[\s\u00A0\u3000]+|[\s\u00A0\u3000]+$/g,''); }
-  function parseTags(v){ if(!v) return []; if(v[0]==='['&&v[v.length-1]===']'){ try{ var a=JSON.parse(v); return Array.isArray(a)?a.map(String):[]; }catch(e){ } } return v.split(/[,，\s]+/).filter(Boolean); }
+  function parseTags(v){
+    if(!v) return [];
+    if(v[0]==='['&&v[v.length-1]===']'){
+      try{ var a=JSON.parse(v); return Array.isArray(a)?a.map(function(x){ return String(x).trim(); }):[]; }catch(e){ /* fall through */ }
+    }
+    var s = String(v).replace(/^\[\s*/, '').replace(/\s*\]$/, '');
+    var raw = s.split(/[,，\s]+/).map(function(x){ return x.replace(/^['\"]|['\"]$/g,'').trim(); }).filter(Boolean);
+    var out = [];
+    raw.forEach(function(tok){
+      var hasHan = /[\u4e00-\u9fff]/.test(tok);
+      var idxAscii = tok.search(/[A-Za-z0-9_*]+/);
+      if(hasHan && idxAscii>0){ out.push(tok.slice(0, idxAscii)); out.push(tok.slice(idxAscii)); }
+      else { out.push(tok); }
+    });
+    return out;
+  }
   function isOptionLine(t){ return /^(\(?[A-Z]\)|（[A-Z]）)/.test(t) || /^([A-Z])\s*[\.．、]/.test(t); }
   function cleanupBody(s){ var x=String(s||''); x=x.replace(/^[\s\t]*(\r?\n)+/, ''); x=x.replace(/(\r?\n){3,}/g, '\n\n'); x=x.replace(/(\r?\n)+\s*$/, ''); x=x.split(/\r?\n/).map(function(l){ return l.replace(/^[\s\u00A0\u3000]+/, ''); }).join('\n'); return x; }
   function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -61,8 +67,38 @@
         while(i<lines.length){
           var tline = trim(lines[i]);
           if(/^###\s+/.test(tline) || /^\d+\.\s+/.test(tline) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(tline) || /^---+$/.test(tline)) break;
-          if(/^选项\s*[:：]/.test(tline)){ i++; var opts=[]; while(i<lines.length){ var t2=trim(lines[i]); if(/^###\s+/.test(t2) || /^\d+\.\s+/.test(t2) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(t2)) break; if(isOptionLine(t2)){ opts.push(t2); } else if(t2!==''){ opts.push(t2); } i++; } q.options=opts; break; }
-          if(isOptionLine(tline)){ var opts=[]; while(i<lines.length){ var t2=trim(lines[i]); if(/^###\s+/.test(t2) || /^\d+\.\s+/.test(t2) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(t2)) break; if(isOptionLine(t2)){ opts.push(t2); } else if(t2!==''){ opts.push(t2); } i++; } q.options=opts; break; }
+          if(/^(tags|标签|difficulty|难度|knowledge|知识点)\s*[:：]/i.test(tline)){
+            var kv = tline.split(':'); var k=trim(kv[0]).toLowerCase(); var v=trim(kv.slice(1).join(':'));
+            if(k==='tags' || k==='标签'){ q.tags = q.tags.concat(parseTags(v)); }
+            else if(k==='difficulty' || k==='难度'){ q.difficulty = v; }
+            else if(k==='knowledge' || k==='知识点'){ q.knowledge = v; }
+            i++; continue;
+          }
+          if(/^选项\s*[:：]/.test(tline)){
+            i++; var opts=[]; while(i<lines.length){
+              var t2=trim(lines[i]);
+              if(/^###\s+/.test(t2) || /^\d+\.\s+/.test(t2) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(t2)) break;
+              if(/^答案\s*[:：]/.test(t2) || /^解析\s*[:：]/.test(t2)) break;
+              if(isOptionLine(t2)){ opts.push(t2); } else if(t2!==''){ opts.push(t2); } i++;
+            }
+            q.options=opts; continue;
+          }
+          if(isOptionLine(tline)){
+            var opts=[]; while(i<lines.length){
+              var t2=trim(lines[i]);
+              if(/^###\s+/.test(t2) || /^\d+\.\s+/.test(t2) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(t2)) break;
+              if(/^答案\s*[:：]/.test(t2) || /^解析\s*[:：]/.test(t2)) break;
+              if(isOptionLine(t2)){ opts.push(t2); } else if(t2!==''){ opts.push(t2); } i++;
+            }
+            q.options=opts; continue;
+          }
+          if(/^答案\s*[:：]/.test(tline)){ q.answer = trim(tline).replace(/^答案\s*[:：]/,''); i++; continue; }
+          if(/^解析\s*[:：]/.test(tline)){
+            i++; var sol=[]; while(i<lines.length){
+              var t2=trim(lines[i]); if(/^###\s+/.test(t2) || /^\d+\.\s+/.test(t2) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(t2) || /^---+$/.test(t2)) break; sol.push(lines[i]); i++;
+            }
+            q.solution = sol.join('\n'); continue;
+          }
           body.push(lines[i]); i++;
         }
         q.body = cleanupBody(body.join('\n'));
@@ -81,14 +117,15 @@
     var prof = loadProf();
     container.innerHTML = p.questions.map(function(q,idx){
       var tagsHTML = (q.tags||[]).map(function(t){ var href = mapTag(t); var a = href?('<a class="pill" href="'+href+'">'+t+'</a>'):('<span class="pill">'+t+'</span>'); return a; }).join('');
+      var learnHref = null; (q.tags||[]).some(function(t){ var h = mapTag(t); if(h){ var paper = qs('paper')||''; var parts = String(h).split('#'); var base=parts[0]; var hash = parts[1]?('#'+parts[1]):''; var ref = 'exam-viewer.html?paper='+encodeURIComponent(paper)+'&goto='+idx; var join = base.indexOf('?')>-1 ? '&' : '?'; learnHref = base + join + 'ref='+ encodeURIComponent(ref) + hash; return true; } return false; });
       var optsHTML = (q.options||[]).length?('<div class="q-options">'+q.options.map(function(o){ return '<div>'+esc(o)+'</div>'; }).join('')+'</div>'):'';
       var meta = [q.difficulty?('难度：'+q.difficulty):'', (q.knowledge||'')].filter(Boolean).join(' · ');
-      var solBtn = '<div class="q-ops"><button class="btn btn-sol" data-toggle="sol" data-idx="'+idx+'">解析</button></div>';
+      var solBtn = '<div class="q-ops"><button class="btn btn-sol" data-toggle="sol" data-idx="'+idx+'">解析</button>'+ (learnHref?('<a class="btn" href="'+learnHref+'">去学</a>'):'') +'</div>';
       var sol = (function(){ var ans = q.answer?('<div><strong>答案：</strong>'+ esc(q.answer) +'</div>') : ''; var body = esc(q.solution || '解析占位（待补充）'); return '<div class="q-solution hidden" id="sol-'+idx+'">'+ ans +'<div style="white-space:pre-wrap;">'+ body +'</div></div>'; })();
       var r = parseInt(prof[String(idx)]||0,10);
       var labels = {1:'初看懂',2:'仿着做',3:'查资料',4:'独立解',5:'能迁移'};
       var rate = '<div class="q-rate">'+[1,2,3,4,5].map(function(n){ return '<button class="pill'+(r===n?' active':'')+'" data-rating="'+n+'" data-idx="'+idx+'">'+n+'级·'+labels[n]+'</button>'; }).join('')+'</div>';
-      return '<div class="question"><div class="q-title">'+ (q.title || ('第 '+(idx+1)+' 题')) +'</div><div class="q-meta">'+ meta +'</div><div class="q-body" style="white-space:pre-line;">'+ esc(q.body || '') +'</div>'+ optsHTML + rate +'<div class="q-tags">'+tagsHTML+'</div>'+ solBtn + sol +'</div>';
+      return '<div class="question" id="q-'+idx+'"><div class="q-title">'+ (q.title || ('第 '+(idx+1)+' 题')) +'</div><div class="q-meta">'+ meta +'</div><div class="q-body" style="white-space:pre-line;">'+ esc(q.body || '') +'</div>'+ optsHTML + rate +'<div class="q-tags">'+tagsHTML+'</div>'+ solBtn + sol +'</div>';
     }).join('');
     if(window.MathJax && window.MathJax.typesetPromise){ window.MathJax.typesetPromise([container]); }
   }
@@ -107,6 +144,7 @@
       });
     }
     if(toggleAll){ toggleAll.addEventListener('click', function(){ var els = container.querySelectorAll('.q-solution'); els.forEach(function(el){ el.classList.toggle('hidden'); }); }); }
+    var gotoIdx = parseInt(qs('goto')||'',10); if(!isNaN(gotoIdx)){ var el = document.getElementById('q-'+gotoIdx); if(el){ el.scrollIntoView({ behavior:'smooth', block:'start' }); } }
   }
   function tryFetch(urls){
     var u = urls.slice();

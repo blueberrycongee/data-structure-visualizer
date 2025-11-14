@@ -145,6 +145,21 @@ html:not(.theme-light) .hint-box {
   color: var(--muted) !important;
 }
 
+/* Exam viewer cards & controls */
+html:not(.theme-light) .question { background: var(--surface) !important; border: 1px solid var(--line) !important; box-shadow: none !important; }
+html:not(.theme-light) .q-title { color: var(--fg) !important; }
+html:not(.theme-light) .q-meta { color: var(--muted) !important; }
+html:not(.theme-light) .q-body { color: var(--fg) !important; }
+html:not(.theme-light) .q-options { background: transparent !important; }
+html:not(.theme-light) .q-solution { background: var(--surface-hover) !important; border: 1px solid var(--line) !important; border-radius: 8px; padding: 8px !important; }
+html:not(.theme-light) .pill { background: var(--surface) !important; border: 1px solid var(--line) !important; color: var(--muted) !important; }
+html:not(.theme-light) .pill:hover { background: var(--surface-hover) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
+html:not(.theme-light) .pill.active { background: rgba(0, 194, 255, 0.12) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
+html:not(.theme-light) .btn { background: var(--surface) !important; border: 1px solid var(--line) !important; color: var(--fg) !important; }
+html:not(.theme-light) .btn:hover { background: var(--surface-hover) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
+html:not(.theme-light) .search { background: var(--bg) !important; color: var(--fg) !important; border: 1px solid var(--line) !important; }
+html:not(.theme-light) .notice { background: var(--surface) !important; border: 1px dashed var(--line) !important; color: var(--muted) !important; }
+
 /* Panels and items */
 html:not(.theme-light) .property-panel,
 html:not(.theme-light) .performance-panel,
@@ -247,6 +262,13 @@ html:not(.theme-light) .knowledge-panel details { background: var(--surface-hove
 html:not(.theme-light) .knowledge-panel summary { color: var(--accent) !important; }
 html:not(.theme-light) .knowledge-panel .knowledge-content { color: var(--muted) !important; }
 html:not(.theme-light) .knowledge-panel .formula { background: var(--surface) !important; border-left-color: var(--accent) !important; color: var(--muted) !important; }
+
+/* Knowledge pages (ds.html) */
+html:not(.theme-light) .k-item { background: var(--surface) !important; border: 1px solid var(--line) !important; }
+html:not(.theme-light) .k-title { color: var(--fg) !important; }
+html:not(.theme-light) .k-body { color: var(--muted) !important; }
+html:not(.theme-light) .k-link { background: var(--surface) !important; border: 1px solid var(--line) !important; color: var(--muted) !important; }
+html:not(.theme-light) .k-link:hover { background: var(--surface-hover) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
 
 /* Tables/status panels (KMP/BM) */
 html:not(.theme-light) .tables-panel { background: var(--surface) !important; border: 1px solid var(--line) !important; }

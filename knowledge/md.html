@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown 知识文档</title>
+  <link rel="stylesheet" href="../assets/css/home.css">
+  <link rel="stylesheet" href="../assets/css/theme.css">
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$'], ['\\(','\\)']] }, svg: { fontCache: 'global' } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <style>
+    .content-section { margin: 28px 10px; }
+    .md-card { background:#fff; border:1px solid #e6eaf2; border-radius:12px; padding:16px; }
+    .md-body { line-height:1.8; }
+    .md-body h1, .md-body h2, .md-body h3 { margin: 12px 0 6px; }
+    .md-body pre { background:#f8f9fa; border:1px solid #e6eaf2; border-radius:8px; padding:10px; overflow:auto; }
+    .md-body blockquote { margin:8px 0; padding:8px 12px; border-left:4px solid #a3b8ff; background:#f6f8ff; }
+  </style>
+</head>
+<body>
+  <div class="home-container">
+    <header class="header">
+      <h1>知识点库 — Markdown</h1>
+      <p class="subtitle">外部 Markdown 知识文档查看与联动</p>
+    </header>
+    <main class="main-content">
+      <section class="content-section">
+        <div class="md-card">
+          <div id="ref-back" style="text-align:right;margin-bottom:8px;"></div>
+          <article id="md" class="md-body"></article>
+        </div>
+      </section>
+    </main>
+    <footer class="footer"><p>知识点库 © 2024</p></footer>
+  </div>
+  <script>
+    (function(){
+      function qs(key){ var s=location.search.replace(/^\?/,'').split('&').filter(Boolean).map(function(p){ var i=p.indexOf('='); return [decodeURIComponent(p.slice(0,i)), decodeURIComponent(p.slice(i+1))]; }); var o={}; s.forEach(function(kv){ o[kv[0]]=kv[1]; }); return o[key]; }
+      function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      function render(md){
+        var t=String(md||'');
+        if(/^---\s*\n/.test(t)){ var idx=t.indexOf('\n---'); if(idx>-1){ t=t.slice(idx+4); } }
+        var lines=t.replace(/\r\n/g,'\n').split('\n');
+        var html=[]; var inCode=false; var code=[];
+        for(var i=0;i<lines.length;i++){
+          var l=lines[i];
+          if(/^```/.test(l)){ if(inCode){ html.push('<pre>'+esc(code.join('\n'))+'</pre>'); code=[]; inCode=false; } else { inCode=true; } continue; }
+          if(inCode){ code.push(l); continue; }
+          if(/^#\s+/.test(l)){ html.push('<h1>'+esc(l.replace(/^#\s+/,''))+'</h1>'); continue; }
+          if(/^##\s+/.test(l)){ html.push('<h2>'+esc(l.replace(/^##\s+/,''))+'</h2>'); continue; }
+          if(/^###\s+/.test(l)){ html.push('<h3>'+esc(l.replace(/^###\s+/,''))+'</h3>'); continue; }
+          if(/^>\s*/.test(l)){ html.push('<blockquote>'+esc(l.replace(/^>\s*/,''))+'</blockquote>'); continue; }
+          if(/\|/.test(l) && /\|/.test(lines[Math.min(i+1,lines.length-1)]||'')){ html.push('<pre>'+esc(l)+'</pre>'); continue; }
+          if(l.trim()===''){ html.push('<br>'); continue; }
+          html.push('<p>'+esc(l)+'</p>');
+        }
+        return html.join('\n');
+      }
+      var header=document.querySelector('.header');
+      var from=qs('from');
+      var left=document.createElement('a'); left.className='back-link'; left.style.position='absolute'; left.style.left='20px'; left.style.top='20px';
+      if(from){
+        var map={ ds:'ds.html', os:'os.html', arch:'arch.html', network:'network.html' };
+        left.textContent='← 返回上一级'; left.href= map[from] || 'index.html';
+      } else {
+        left.textContent='← 返回知识点库'; left.href='index.html';
+      }
+      header.appendChild(left);
+
+      var ref=qs('ref'); if(ref){ var back=document.getElementById('ref-back'); var a=document.createElement('a'); a.className='btn'; a.textContent='← 返回刷题'; a.href=ref; back.appendChild(a); }
+      var file=qs('file'); if(!file){ document.getElementById('md').innerHTML='<div class="notice">未指定文件参数 <code>?file=...</code></div>'; return; }
+      fetch(file).then(function(r){ return r.text(); }).then(function(txt){ var html=render(txt); var el=document.getElementById('md'); el.innerHTML=html; if(window.MathJax && window.MathJax.typesetPromise){ window.MathJax.typesetPromise([el]); } }).catch(function(){ document.getElementById('md').innerHTML='<div class="notice">无法加载指定文件</div>'; });
+    })();
+  </script>
+  <script src="../assets/js/theme.js"></script>
+</body>
+</html>
