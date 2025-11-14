@@ -175,7 +175,17 @@
     return new Promise(function(resolve,reject){ next(resolve,reject); });
   }
   document.addEventListener('DOMContentLoaded', function(){
-    var paper = qs('paper'); var titleEl=document.getElementById('paper-title'); if(!paper){ titleEl && (titleEl.textContent='试卷（未指定）'); document.getElementById('empty').classList.remove('hidden'); return; }
+    var paper = qs('paper'); var titleEl=document.getElementById('paper-title'); if(!paper){
+      fetch('/_papers.json').then(function(r){ return r.json(); }).then(function(list){
+        if(Array.isArray(list) && list.length>0 && list[0] && list[0].name){
+          var first=list[0].name;
+          location.replace('exam-viewer.html?paper='+encodeURIComponent(first));
+        } else {
+          titleEl && (titleEl.textContent='试卷（未指定）'); document.getElementById('empty').classList.remove('hidden');
+        }
+      }).catch(function(){ titleEl && (titleEl.textContent='试卷（未指定）'); document.getElementById('empty').classList.remove('hidden'); });
+      return;
+    }
     var urls = ['papers/'+paper, paper, '计算机网络/'+paper];
     tryFetch(urls).then(function(res){ var parsed = parseMarkdown(res.text); renderPaper(parsed); attachEvents(parsed); }).catch(function(){ document.getElementById('empty').classList.remove('hidden'); });
   });
