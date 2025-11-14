@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数据结构 — 导航</title>
-    <meta http-equiv="refresh" content="0; url=topics.html">
     <link rel="stylesheet" href="assets/css/landing.css">
     <link rel="stylesheet" href="assets/css/theme.css">
 </head>
 <body>
-    <script>window.location.replace('topics.html');</script>
+    <script>(function(){ try{ var params=new URLSearchParams(location.search||''); if(!params.has('go')){ window.location.replace('topics.html'); } }catch(e){ window.location.replace('topics.html'); } })();</script>
     <header class="hero" role="banner">
         <canvas id="bg-canvas" class="bg-canvas" aria-hidden="true"></canvas>
         <div class="hero-inner container">

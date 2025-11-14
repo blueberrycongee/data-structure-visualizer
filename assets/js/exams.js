@@ -23,6 +23,8 @@
     return out;
   }
   function isOptionLine(t){ return /^(\(?[A-Z]\)|（[A-Z]）)/.test(t) || /^([A-Z])\s*[\.．、]/.test(t); }
+  function isTFItem(t){ return /^\s*(\(\s*[√×]\s*\)|（\s*[√×]\s*）)/.test(t||''); }
+  function stripTFPrefix(s){ return String(s||'').replace(/^\s*(\(\s*[√×]\s*\)|（\s*[√×]\s*）)\s*/, ''); }
   function cleanupBody(s){ var x=String(s||''); x=x.replace(/^[\s\t]*(\r?\n)+/, ''); x=x.replace(/(\r?\n){3,}/g, '\n\n'); x=x.replace(/(\r?\n)+\s*$/, ''); x=x.split(/\r?\n/).map(function(l){ return l.replace(/^[\s\u00A0\u3000]+/, ''); }).join('\n'); return x; }
   function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function paperKey(){ return qs('paper') || 'paper'; }
@@ -34,11 +36,11 @@
     while(i<lines.length){
       var line = trim(lines[i]);
       if(i===0 && /^#\s+/.test(line)){ paperTitle = trim(line.replace(/^#+\s+/,'')); i++; continue; }
-      if(/^###\s*(数据结构|操作系统|组成原理|计算机网络)\s*$/.test(line)){ currentSubject = trim(line.replace(/^###\s*/,'')); currentSection=''; i++; continue; }
-      if(/^(\*\*\s*)?[一二三四五六七八九十]+、\s*判断题(\s*\*\*)?$/.test(line) || /^\*\*?\s*判断题\s*\*\*?$/.test(line)){ currentSection='判断题'; i++; continue; }
-      if(/^(\*\*\s*)?[一二三四五六七八九十]+、\s*选择题(\s*\*\*)?$/.test(line) || /^\*\*?\s*选择题\s*\*\*?$/.test(line)){ currentSection='选择题'; i++; continue; }
-      if(/^(\*\*\s*)?[一二三四五六七八九十]+、\s*填空题(\s*\*\*)?$/.test(line) || /^\*\*?\s*填空题\s*\*\*?$/.test(line)){ currentSection='填空题'; i++; continue; }
-      if(/^(\*\*\s*)?[一二三四五六七八九十]+、\s*解答题(\s*\*\*)?$/.test(line) || /^\*\*?\s*解答题\s*\*\*?$/.test(line)){ currentSection='解答题'; i++; continue; }
+      if(/^#{2,3}\s*(数据结构|操作系统|组成原理|计算机网络)\s*$/.test(line)){ currentSubject = trim(line.replace(/^#{2,3}\s*/,'')); currentSection=''; i++; continue; }
+      if(/^(\*\*\s*)?[一二三四五六七八九十]+、\s*判断题.*$/.test(line) || /^\*\*?\s*判断题.*\*\*?$/.test(line)){ currentSection='判断题'; i++; continue; }
+      if(/^(\*\*\s*)?[一二三四五六七八九十]+、\s*选择题.*$/.test(line) || /^\*\*?\s*选择题.*\*\*?$/.test(line)){ currentSection='选择题'; i++; continue; }
+      if(/^(\*\*\s*)?[一二三四五六七八九十]+、\s*填空题.*$/.test(line) || /^\*\*?\s*填空题.*\*\*?$/.test(line)){ currentSection='填空题'; i++; continue; }
+      if(/^(\*\*\s*)?[一二三四五六七八九十]+、\s*解答题.*$/.test(line) || /^\*\*?\s*解答题.*\*\*?$/.test(line)){ currentSection='解答题'; i++; continue; }
       if(/^###\s+/.test(line)){
         var q={ title: trim(line.replace(/^###\s+/,'')), tags:[], difficulty:'', knowledge:'', body:'', options:[], answer:'', solution:'' };
         i++;
@@ -60,13 +62,15 @@
         res.push(q);
         continue;
       }
-      if(currentSection && /^\d+\.\s*/.test(line)){
-        var num = parseInt((line.match(/^\d+/) || ['0'])[0],10);
-        var q={ title: (currentSubject? (currentSubject+' '+currentSection+' '+num) : ('题目 '+num)), tags:[currentSubject, currentSection].filter(Boolean), difficulty:'', knowledge:'', body:'', options:[], answer:'', solution:'' };
-        var body=[trim(line.replace(/^\d+\.\s*/,''))]; i++;
+      if(currentSection && (/^\d+\.\s*/.test(line) || isTFItem(line))){
+        var isNum = /^\d+\.\s*/.test(line);
+        var num = isNum ? parseInt((line.match(/^\d+/) || ['0'])[0],10) : 0;
+        var q={ title:'', tags:[currentSubject, currentSection].filter(Boolean), difficulty:'', knowledge:'', body:'', options:[], answer:'', solution:'' };
+        var firstText = isNum ? trim(line.replace(/^\d+\.\s*/,'')) : trim(stripTFPrefix(line));
+        var body=[ firstText ]; i++;
         while(i<lines.length){
           var tline = trim(lines[i]);
-          if(/^###\s+/.test(tline) || /^\d+\.\s+/.test(tline) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(tline) || /^---+$/.test(tline)) break;
+          if(/^###\s+/.test(tline) || /^\d+\.\s+/.test(tline) || isTFItem(tline) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(tline) || /^---+$/.test(tline)) break;
           if(/^(tags|标签|difficulty|难度|knowledge|知识点)\s*[:：]/i.test(tline)){
             var kv = tline.split(':'); var k=trim(kv[0]).toLowerCase(); var v=trim(kv.slice(1).join(':'));
             if(k==='tags' || k==='标签'){ q.tags = q.tags.concat(parseTags(v)); }
@@ -77,7 +81,7 @@
           if(/^选项\s*[:：]/.test(tline)){
             i++; var opts=[]; while(i<lines.length){
               var t2=trim(lines[i]);
-              if(/^###\s+/.test(t2) || /^\d+\.\s+/.test(t2) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(t2)) break;
+              if(/^###\s+/.test(t2) || /^\d+\.\s+/.test(t2) || isTFItem(t2) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(t2)) break;
               if(/^答案\s*[:：]/.test(t2) || /^解析\s*[:：]/.test(t2)) break;
               if(isOptionLine(t2)){ opts.push(t2); } else if(t2!==''){ opts.push(t2); } i++;
             }
@@ -86,7 +90,7 @@
           if(isOptionLine(tline)){
             var opts=[]; while(i<lines.length){
               var t2=trim(lines[i]);
-              if(/^###\s+/.test(t2) || /^\d+\.\s+/.test(t2) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(t2)) break;
+              if(/^###\s+/.test(t2) || /^\d+\.\s+/.test(t2) || isTFItem(t2) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(t2)) break;
               if(/^答案\s*[:：]/.test(t2) || /^解析\s*[:：]/.test(t2)) break;
               if(isOptionLine(t2)){ opts.push(t2); } else if(t2!==''){ opts.push(t2); } i++;
             }
@@ -95,7 +99,7 @@
           if(/^答案\s*[:：]/.test(tline)){ q.answer = trim(tline).replace(/^答案\s*[:：]/,''); i++; continue; }
           if(/^解析\s*[:：]/.test(tline)){
             i++; var sol=[]; while(i<lines.length){
-              var t2=trim(lines[i]); if(/^###\s+/.test(t2) || /^\d+\.\s+/.test(t2) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(t2) || /^---+$/.test(t2)) break; sol.push(lines[i]); i++;
+              var t2=trim(lines[i]); if(/^###\s+/.test(t2) || /^\d+\.\s+/.test(t2) || isTFItem(t2) || /^(\*\*\s*)?[一二三四五六七八九十]+、/.test(t2) || /^---+$/.test(t2)) break; sol.push(lines[i]); i++;
             }
             q.solution = sol.join('\n'); continue;
           }
