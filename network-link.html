@@ -6,6 +6,14 @@
   <title>链路层</title>
   <link rel="stylesheet" href="assets/css/home.css">
   <link rel="stylesheet" href="assets/css/theme.css">
+  <style>
+    .content-section { margin: 28px 10px; }
+    .info-panel { background: #f8f9fa; border: 1px solid #e6eaf2; border-radius: 12px; padding: 18px; }
+    .info-panel h3 { margin: 0 0 12px 0; font-size: 20px; }
+    .info-panel ul { margin: 8px 0 8px 18px; line-height: 1.7; }
+    .kv { display: grid; grid-template-columns: 160px 1fr; gap: 8px; }
+    code { display: inline-block; padding: 2px 6px; border-radius: 6px; background: #eef6ff; color: #0072ff; border: 1px solid #00c6ff; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.9em; }
+  </style>
 </head>
 <body>
   <div class="home-container">
@@ -15,8 +23,109 @@
       <p class="subtitle">以太网、MAC、差错控制与 ARQ</p>
     </header>
     <main class="main-content">
-      <section class="data-structure-section">
-        <h2 class="section-title">内容将陆续补充</h2>
+      <section class="data-structure-section content-section">
+        <h2 class="section-title" id="link-layer-overview">层次概述</h2>
+        <div class="info-panel">
+          <ul>
+            <li>为网络层提供服务：无确认无连接、有确认无连接、有确认面向连接</li>
+            <li>核心功能：成帧、差错控制、流量控制</li>
+            <li>实现分工：物理层与部分链路层在硬件，余下在驱动与内核</li>
+          </ul>
+        </div>
+      </section>
+      <section class="data-structure-section content-section">
+        <h2 class="section-title" id="framing">成帧方法</h2>
+        <div class="info-panel">
+          <ul>
+            <li>字节计数：首部给出帧长度，计数字段错则同步丢失</li>
+            <li>字节填充定界：<code>Flag</code> 定界，数据内遇 <code>Flag/ESC</code> 前插入 <code>ESC</code></li>
+            <li>比特填充定界：标志 <code>01111110</code>，数据中每遇 5 个 1 插入 0</li>
+            <li>物理层编码违例：利用编码不可能出现的模式定界</li>
+          </ul>
+        </div>
+      </section>
+      <section class="data-structure-section content-section">
+        <h2 class="section-title" id="crc">CRC 要点</h2>
+        <div class="info-panel">
+          <ul>
+            <li>生成：选 <code>G(x)</code>；数据补 r 个 0；模 2 除得余数 <code>R</code>；拼接得帧</li>
+            <li>校验：接收端用同除数整帧相除，余数为 0 判无误</li>
+            <li>计算基元：按位异或实现长除法</li>
+          </ul>
+        </div>
+      </section>
+      <section class="data-structure-section content-section">
+        <h2 class="section-title" id="sliding-window">滑动窗口与确认</h2>
+        <div class="info-panel">
+          <ul>
+            <li>停止-等待：发送 1 帧等待 ACK，信道利用率低</li>
+            <li>窗口概念：发送/接收窗口维护允许的序号范围</li>
+            <li>确认机制：哑帧确认与捎带确认</li>
+          </ul>
+        </div>
+      </section>
+      <section class="data-structure-section content-section">
+        <h2 class="section-title" id="gbn">GBN 协议</h2>
+        <div class="info-panel">
+          <ul>
+            <li>接收窗口 = 1，仅按序接收，乱序/损坏丢弃</li>
+            <li>累计确认：<code>ACK n</code> 表示 ≤ n 全部收到</li>
+            <li>超时回退：重传未确认帧及其之后所有帧</li>
+            <li>窗口限制：<code>W_S ≤ 2^n - 1</code></li>
+          </ul>
+        </div>
+      </section>
+      <section class="data-structure-section content-section">
+        <h2 class="section-title" id="sr">SR 协议</h2>
+        <div class="info-panel">
+          <ul>
+            <li>接收窗口 > 1，可缓存乱序并选择性确认</li>
+            <li>独立计时器，仅重传超时的特定帧</li>
+            <li>NAK 触发快速重传</li>
+            <li>窗口限制：<code>W_S + W_R ≤ 2^n</code>；若 <code>W_S = W_R = W</code>，则 <code>W ≤ 2^(n-1)</code></li>
+          </ul>
+        </div>
+      </section>
+      <section class="data-structure-section content-section">
+        <h2 class="section-title" id="link-performance">性能与计算</h2>
+        <div class="info-panel">
+          <div class="kv"><div>利用率</div><div><code>U = T_f / (T_s + RTT + T_a)</code></div></div>
+          <div class="kv"><div>发送周期</div><div><code>T_f = W_S · T_s</code></div></div>
+          <div class="kv"><div>吞吐量</div><div><code>Throughput = U · 带宽</code></div></div>
+        </div>
+      </section>
+      <section class="data-structure-section content-section">
+        <h2 class="section-title" id="mac-random">MAC 子层：随机访问</h2>
+        <div class="info-panel">
+          <ul>
+            <li>纯 ALOHA：想发就发，危险期 <code>2·T_frame</code>，最大利用率约 18.4%</li>
+            <li>分槽 ALOHA：仅槽起点发送，危险期 <code>1·T_frame</code>，最大利用率约 36.8%</li>
+            <li>CSMA：先听后发；1-坚持/非坚持/p-坚持（分槽）</li>
+          </ul>
+        </div>
+      </section>
+      <section class="data-structure-section content-section">
+        <h2 class="section-title" id="csma-cd-ethernet">CSMA/CD 与以太网</h2>
+        <div class="info-panel">
+          <ul>
+            <li>边发边听，冲突即停并发送 Jam 信号</li>
+            <li>最小帧长：发送时间 ≥ RTT，经典以太网为 64 字节</li>
+            <li>二进制指数退避：第 k 次碰撞后随机等待 <code>[0..2^k-1]</code> 个时隙，k ≤ 10；连续 16 次碰撞放弃</li>
+            <li>帧格式：DIX v2 与 IEEE 802.3，<code>Type &gt; 0x0600</code> / <code>Length ≤ 0x0600</code></li>
+            <li>最大数据 1500B；MAC 地址 6 字节</li>
+          </ul>
+        </div>
+      </section>
+      <section class="data-structure-section content-section">
+        <h2 class="section-title" id="controlled-limited">受控访问与有限竞争</h2>
+        <div class="info-panel">
+          <ul>
+            <li>位图协议：竞争期标记欲发节点，随后按序发送</li>
+            <li>令牌环：持令牌者发送，环形传递</li>
+            <li>二进制倒计数：广播地址，低位听高位，最高地址赢</li>
+            <li>自适应树遍历：分治缩小竞争范围</li>
+          </ul>
+        </div>
       </section>
     </main>
     <footer class="footer"><p>链路层 © 2024</p></footer>

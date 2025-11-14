@@ -22,7 +22,7 @@
     </header>
     <main class="main-content">
       <section class="data-structure-section content-section">
-        <h2 class="section-title">基本度量</h2>
+        <h2 class="section-title" id="perf-basics">基本度量</h2>
         <div class="info-panel">
           <ul>
             <li>带宽/比特率（bps）</li>
@@ -31,7 +31,7 @@
         </div>
       </section>
       <section class="data-structure-section content-section">
-        <h2 class="section-title">考点速记</h2>
+        <h2 class="section-title" id="perf-tips">考点速记</h2>
         <div class="info-panel">
           <ul>
             <li>效率题：层间开销固定时，按载荷与总开销计算效率</li>
@@ -43,7 +43,7 @@
         </div>
       </section>
       <section class="data-structure-section content-section">
-        <h2 class="section-title">时延构成</h2>
+        <h2 class="section-title" id="delays">时延构成</h2>
         <div class="info-panel">
           <ul>
             <li>传输时延：数据大小 / 带宽</li>
@@ -54,7 +54,7 @@
         </div>
       </section>
       <section class="data-structure-section content-section">
-        <h2 class="section-title">其他度量</h2>
+        <h2 class="section-title" id="others">其他度量</h2>
         <div class="info-panel">
           <ul>
             <li>RTT</li>
@@ -62,6 +62,18 @@
             <li>利用率</li>
             <li>丢包率</li>
             <li>时延带宽积</li>
+          </ul>
+        </div>
+      </section>
+      <section class="data-structure-section content-section">
+        <h2 class="section-title" id="window-formulas">滑动窗口性能公式</h2>
+        <div class="info-panel">
+          <ul>
+            <li>发送时延：<code>T_s = 帧长度(bit) / 带宽(bps)</code></li>
+            <li>发送周期：<code>T_f = W_S · T_s</code></li>
+            <li>利用率：<code>U = T_f / (T_s + RTT + T_a)</code></li>
+            <li>吞吐量：<code>Throughput = U · 带宽</code></li>
+            <li>确认开销：捎带确认可视为 <code>T_a = T_s</code>，否则按题目说明</li>
           </ul>
         </div>
       </section>

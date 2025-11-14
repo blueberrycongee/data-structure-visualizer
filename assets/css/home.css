@@ -20,7 +20,7 @@ body {
 /* 头部样式 */
 .header {
     text-align: center;
-    padding: 60px 20px;
+    padding: 128px 20px 60px 20px;
     color: white;
     position: relative;
 }

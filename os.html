@@ -18,26 +18,12 @@
     <main class="main-content">
       <section class="data-structure-section">
         <h2 class="section-title">演示模块</h2>
-        <div class="card-grid">
-          <div class="card">
-            <div class="card-icon">👥</div>
-            <h3 class="card-title">进程与调度</h3>
-            <p class="card-description">调度算法可视化（FCFS、SJF、RR 等）</p>
-            <div class="card-status coming-soon">即将推出</div>
-          </div>
-          <div class="card">
-            <div class="card-icon">🧠</div>
-            <h3 class="card-title">内存管理</h3>
-            <p class="card-description">分页、分段与置换算法演示</p>
-            <div class="card-status coming-soon">即将推出</div>
-          </div>
-          <div class="card">
-            <div class="card-icon">📁</div>
-            <h3 class="card-title">文件系统</h3>
-            <p class="card-description">目录结构与索引分配示例</p>
-            <div class="card-status coming-soon">即将推出</div>
-          </div>
-        </div>
+        <div class="card-grid" id="module-grid"></div>
+        <script type="application/json" id="module-index-data">[
+          {"icon":{"type":"emoji","value":"👥"},"title":"进程与调度","desc":"调度算法可视化（FCFS、SJF、RR 等）","status":"coming-soon"},
+          {"icon":{"type":"emoji","value":"🧠"},"title":"内存管理","desc":"分页、分段与置换算法演示","status":"coming-soon"},
+          {"icon":{"type":"emoji","value":"📁"},"title":"文件系统","desc":"目录结构与索引分配示例","status":"coming-soon"}
+        ]</script>
       </section>
     </main>
 
@@ -45,6 +31,7 @@
       <p>操作系统演示 © 2024</p>
     </footer>
   </div>
+  <script src="assets/js/module-index.js"></script>
   <script src="assets/js/theme.js"></script>
 </body>
 </html>

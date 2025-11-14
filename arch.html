@@ -18,26 +18,12 @@
     <main class="main-content">
       <section class="data-structure-section">
         <h2 class="section-title">演示模块</h2>
-        <div class="card-grid">
-          <a class="card" href="encoding-index.html" style="text-decoration:none;color:inherit;">
-            <div class="card-icon">🔢</div>
-            <h3 class="card-title">指令与编码</h3>
-            <p class="card-description">进制转换、原/反/补、IEEE754、海明码</p>
-            <div class="card-status online" style="background:#4CAF50;color:#fff;">已上线</div>
-          </a>
-          <div class="card">
-            <div class="card-icon">💾</div>
-            <h3 class="card-title">存储层次</h3>
-            <p class="card-description">缓存、主存与磁盘的层次结构与命中率</p>
-            <div class="card-status coming-soon">即将推出</div>
-          </div>
-          <a class="card" href="pipeline.html" style="text-decoration:none;color:inherit;">
-            <div class="card-icon">⏱️</div>
-            <h3 class="card-title">流水线</h3>
-            <p class="card-description">指令流水线阶段与冒险分析</p>
-            <div class="card-status online" style="background:#4CAF50;color:#fff;">已上线</div>
-          </a>
-        </div>
+        <div class="card-grid" id="module-grid"></div>
+        <script type="application/json" id="module-index-data">[
+          {"href":"encoding-index.html","icon":{"type":"emoji","value":"🔢"},"title":"指令与编码","desc":"进制转换、原/反/补、IEEE754、海明码","status":"online"},
+          {"icon":{"type":"emoji","value":"💾"},"title":"存储层次","desc":"缓存、主存与磁盘的层次结构与命中率","status":"coming-soon"},
+          {"href":"pipeline.html","icon":{"type":"emoji","value":"⏱️"},"title":"流水线","desc":"指令流水线阶段与冒险分析","status":"online"}
+        ]</script>
       </section>
     </main>
 
@@ -45,6 +31,7 @@
       <p>组成原理演示 © 2024</p>
     </footer>
   </div>
+  <script src="assets/js/module-index.js"></script>
   <script src="assets/js/theme.js"></script>
 </body>
 </html>

@@ -178,6 +178,9 @@ body {
     z-index: 10;
 }
 
+/* 页面头部为绝对定位返回链接预留空间 */
+.page-header { padding-top: 88px; }
+
 .header-top {
     display: flex;
     align-items: center;

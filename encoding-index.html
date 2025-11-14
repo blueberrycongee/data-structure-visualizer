@@ -18,38 +18,14 @@
     <main class="main-content">
       <section class="data-structure-section">
         <h2 class="section-title">模块列表</h2>
-        <div class="card-grid">
-          <a class="card" href="bases.html" style="text-decoration:none;color:inherit;">
-            <div class="card-icon">#️⃣</div>
-            <h3 class="card-title">各种进制转换</h3>
-            <p class="card-description">输入数值或前缀 0b/0o/0x 自动识别</p>
-            <div class="card-status online" style="background:#4CAF50;color:#fff;">已上线</div>
-          </a>
-          <a class="card" href="integer.html" style="text-decoration:none;color:inherit;">
-            <div class="card-icon">➕➖</div>
-            <h3 class="card-title">有符号/无符号 与 原/反/补</h3>
-            <p class="card-description">整数位宽选择与表示形式对比</p>
-            <div class="card-status online" style="background:#4CAF50;color:#fff;">已上线</div>
-          </a>
-          <a class="card" href="ieee754.html" style="text-decoration:none;color:inherit;">
-            <div class="card-icon">𝝅</div>
-            <h3 class="card-title">IEEE 754 浮点数</h3>
-            <p class="card-description">十进制 ↔ 位模式，S/E/F 拆解与分类</p>
-            <div class="card-status online" style="background:#4CAF50;color:#fff;">已上线</div>
-          </a>
-          <a class="card" href="hamming.html" style="text-decoration:none;color:inherit;">
-            <div class="card-icon">🛡️</div>
-            <h3 class="card-title">海明码 (7,4)</h3>
-            <p class="card-description">偶校验、综合症与单比特纠错</p>
-            <div class="card-status online" style="background:#4CAF50;color:#fff;">已上线</div>
-          </a>
-          <a class="card" href="instruction-format.html" style="text-decoration:none;color:inherit;">
-            <div class="card-icon">🧩</div>
-            <h3 class="card-title">指令格式与寻址方式</h3>
-            <p class="card-description">R/I/J 编码与常见寻址模式</p>
-            <div class="card-status coming-soon">建设中</div>
-          </a>
-        </div>
+        <div class="card-grid" id="module-grid"></div>
+        <script type="application/json" id="module-index-data">[
+          {"href":"bases.html","icon":{"type":"emoji","value":"#️⃣"},"title":"各种进制转换","desc":"输入数值或前缀 0b/0o/0x 自动识别","status":"online"},
+          {"href":"integer.html","icon":{"type":"emoji","value":"➕➖"},"title":"有符号/无符号 与 原/反/补","desc":"整数位宽选择与表示形式对比","status":"online"},
+          {"href":"ieee754.html","icon":{"type":"emoji","value":"𝝅"},"title":"IEEE 754 浮点数","desc":"十进制 ↔ 位模式，S/E/F 拆解与分类","status":"online"},
+          {"href":"hamming.html","icon":{"type":"emoji","value":"🛡️"},"title":"海明码 (7,4)","desc":"偶校验、综合症与单比特纠错","status":"online"},
+          {"href":"instruction-format.html","icon":{"type":"emoji","value":"🧩"},"title":"指令格式与寻址方式","desc":"R/I/J 编码与常见寻址模式","status":"coming-soon"}
+        ]</script>
       </section>
     </main>
 
@@ -57,6 +33,7 @@
       <p>指令与编码 · 模块目录 © 2024</p>
   </footer>
   </div>
+  <script src="assets/js/module-index.js"></script>
   <script src="assets/js/theme.js"></script>
 </body>
 </html>

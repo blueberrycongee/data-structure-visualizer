@@ -6,13 +6,6 @@
   <title>计算机网络</title>
     <link rel="stylesheet" href="assets/css/home.css">
     <link rel="stylesheet" href="assets/css/theme.css">
-    <style>
-      .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 0 10px; }
-      .card { background: #fff; border-radius: 12px; padding: 24px; border: 1px solid #e6eaf2; transition: transform 0.2s ease; text-decoration: none; color: inherit; display: block; }
-      .card:hover { transform: translateY(-4px); }
-      .card h3 { margin: 0 0 8px 0; font-size: 18px; }
-      .card p { margin: 0; font-size: 14px; opacity: 0.9; }
-    </style>
 </head>
 <body>
   <div class="home-container">
@@ -25,16 +18,17 @@
     <main class="main-content">
       <section class="data-structure-section">
         <h2 class="section-title">模块导航</h2>
-        <div class="cards">
-          <a class="card" href="network-physical.html"><h3>物理层</h3><p>比特流、四特性、带宽与速率</p></a>
-          <a class="card" href="network-models.html"><h3>参考模型</h3><p>OSI 七层与 TCP/IP 四层/五层</p></a>
-          <a class="card" href="network-routing.html"><h3>路由与转发</h3><p>最短路、DV/LS、IP 路由</p></a>
-          <a class="card" href="network-transport.html"><h3>传输层</h3><p>TCP/UDP、可靠性与流量控制</p></a>
-          <a class="card" href="network-congestion.html"><h3>拥塞控制</h3><p>慢启动、拥塞避免、快速恢复</p></a>
-          <a class="card" href="network-application.html"><h3>应用层协议</h3><p>HTTP、DNS 等常见协议流程</p></a>
-          <a class="card" href="network-link.html"><h3>链路层</h3><p>以太网、MAC、差错控制与 ARQ</p></a>
-          <a class="card" href="network-performance.html"><h3>性能与度量</h3><p>RTT、吞吐量、带宽与 PPS</p></a>
-        </div>
+        <div class="card-grid" id="module-grid"></div>
+        <script type="application/json" id="module-index-data">[
+          {"href":"network-physical.html","icon":{"type":"emoji","value":"🔌"},"title":"物理层","desc":"比特流、四特性、带宽与速率","status":"online"},
+          {"href":"network-models.html","icon":{"type":"emoji","value":"🧱"},"title":"参考模型","desc":"OSI 七层与 TCP/IP 四层/五层","status":"online"},
+          {"href":"network-routing.html","icon":{"type":"emoji","value":"🧭"},"title":"路由与转发","desc":"最短路、DV/LS、IP 路由","status":"online"},
+          {"href":"network-transport.html","icon":{"type":"emoji","value":"📦"},"title":"传输层","desc":"TCP/UDP、可靠性与流量控制","status":"online"},
+          {"href":"network-congestion.html","icon":{"type":"emoji","value":"⚠️"},"title":"拥塞控制","desc":"慢启动、拥塞避免、快速恢复","status":"online"},
+          {"href":"network-application.html","icon":{"type":"emoji","value":"🌐"},"title":"应用层协议","desc":"HTTP、DNS 等常见协议流程","status":"online"},
+          {"href":"network-link.html","icon":{"type":"emoji","value":"🔗"},"title":"链路层","desc":"以太网、MAC、差错控制与 ARQ","status":"online"},
+          {"href":"network-performance.html","icon":{"type":"emoji","value":"📈"},"title":"性能与度量","desc":"RTT、吞吐量、带宽与 PPS","status":"online"}
+        ]</script>
       </section>
     </main>
 
@@ -42,6 +36,7 @@
       <p>计算机网络演示 © 2024</p>
     </footer>
   </div>
+  <script src="assets/js/module-index.js"></script>
   <script src="assets/js/theme.js"></script>
 </body>
 </html>
