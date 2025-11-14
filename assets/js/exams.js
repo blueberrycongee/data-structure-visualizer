@@ -85,7 +85,8 @@
       var meta = [q.difficulty?('难度：'+q.difficulty):'', (q.knowledge||'')].filter(Boolean).join(' · ');
       var sol = (q.answer||q.solution)?('<div class="q-ops"><button class="btn" data-toggle="sol" data-idx="'+idx+'">显示/隐藏答案解析</button></div><div class="q-solution hidden" id="sol-'+idx+'"><div><strong>答案：</strong>'+ esc(q.answer || '') +'</div><div style="white-space:pre-wrap;">'+ esc(q.solution || '') +'</div></div>') : '';
       var r = parseInt(prof[String(idx)]||0,10);
-      var rate = '<div class="q-rate">'+[1,2,3,4,5].map(function(n){ return '<button class="pill'+(r===n?' active':'')+'" data-rating="'+n+'" data-idx="'+idx+'">'+n+'级</button>'; }).join('')+'</div>';
+      var labels = {1:'初看懂',2:'仿着做',3:'查资料',4:'独立解',5:'能迁移'};
+      var rate = '<div class="q-rate">'+[1,2,3,4,5].map(function(n){ return '<button class="pill'+(r===n?' active':'')+'" data-rating="'+n+'" data-idx="'+idx+'">'+n+'级·'+labels[n]+'</button>'; }).join('')+'</div>';
       return '<div class="question"><div class="q-title">'+ (q.title || ('第 '+(idx+1)+' 题')) +'</div><div class="q-meta">'+ meta +'</div><div class="q-body" style="white-space:pre-line;">'+ esc(q.body || '') +'</div>'+ optsHTML + rate +'<div class="q-tags">'+tagsHTML+'</div>'+ sol +'</div>';
     }).join('');
     if(window.MathJax && window.MathJax.typesetPromise){ window.MathJax.typesetPromise([container]); }
