@@ -83,11 +83,12 @@
       var tagsHTML = (q.tags||[]).map(function(t){ var href = mapTag(t); var a = href?('<a class="pill" href="'+href+'">'+t+'</a>'):('<span class="pill">'+t+'</span>'); return a; }).join('');
       var optsHTML = (q.options||[]).length?('<div class="q-options">'+q.options.map(function(o){ return '<div>'+esc(o)+'</div>'; }).join('')+'</div>'):'';
       var meta = [q.difficulty?('难度：'+q.difficulty):'', (q.knowledge||'')].filter(Boolean).join(' · ');
-      var sol = (q.answer||q.solution)?('<div class="q-ops"><button class="btn" data-toggle="sol" data-idx="'+idx+'">显示/隐藏答案解析</button></div><div class="q-solution hidden" id="sol-'+idx+'"><div><strong>答案：</strong>'+ esc(q.answer || '') +'</div><div style="white-space:pre-wrap;">'+ esc(q.solution || '') +'</div></div>') : '';
+      var solBtn = '<div class="q-ops"><button class="btn btn-sol" data-toggle="sol" data-idx="'+idx+'">解析</button></div>';
+      var sol = (function(){ var ans = q.answer?('<div><strong>答案：</strong>'+ esc(q.answer) +'</div>') : ''; var body = esc(q.solution || '解析占位（待补充）'); return '<div class="q-solution hidden" id="sol-'+idx+'">'+ ans +'<div style="white-space:pre-wrap;">'+ body +'</div></div>'; })();
       var r = parseInt(prof[String(idx)]||0,10);
       var labels = {1:'初看懂',2:'仿着做',3:'查资料',4:'独立解',5:'能迁移'};
       var rate = '<div class="q-rate">'+[1,2,3,4,5].map(function(n){ return '<button class="pill'+(r===n?' active':'')+'" data-rating="'+n+'" data-idx="'+idx+'">'+n+'级·'+labels[n]+'</button>'; }).join('')+'</div>';
-      return '<div class="question"><div class="q-title">'+ (q.title || ('第 '+(idx+1)+' 题')) +'</div><div class="q-meta">'+ meta +'</div><div class="q-body" style="white-space:pre-line;">'+ esc(q.body || '') +'</div>'+ optsHTML + rate +'<div class="q-tags">'+tagsHTML+'</div>'+ sol +'</div>';
+      return '<div class="question"><div class="q-title">'+ (q.title || ('第 '+(idx+1)+' 题')) +'</div><div class="q-meta">'+ meta +'</div><div class="q-body" style="white-space:pre-line;">'+ esc(q.body || '') +'</div>'+ optsHTML + rate +'<div class="q-tags">'+tagsHTML+'</div>'+ solBtn + sol +'</div>';
     }).join('');
     if(window.MathJax && window.MathJax.typesetPromise){ window.MathJax.typesetPromise([container]); }
   }
