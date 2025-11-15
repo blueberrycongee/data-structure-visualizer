@@ -1,95 +1,100 @@
 # 数据结构可视化器
 
-交互式数据结构与算法演示平台，支持 AVL / 红黑树、哈希表、字符串匹配、流水线冲突、进制编码等模块，统一步进回放与字幕提示。
+交互式数据结构与算法演示平台。支持数据结构可视化、学科导航、试卷练习（Markdown 试卷解析、题目标签到知识点的联动）等模块。
 
-## 功能速览
+## 亮点特性
 
-### 1. 树结构可视化
-- **AVL 树**：插入动画、旋转分步回放、字幕 3s 自动隐藏。
-- **红黑树**：插入修复、删除（含批量队列）、右键节点菜单、完整撤销。
-- **通用组件**：`AnimationStepController` 提供前进/回退、字幕自动隐藏、节点高亮。
+- 主页统一到 `topics.html`，根路径 `index.html` 自动重定向到主页（当无 `go` 参数时）。
+- 数据结构知识页按分类读取 `filenames.txt`，支持中文文件名与多编码解码。
+- 试卷列表自动读取 `papers/` 目录的 `.md` 文件并渲染为卡片，无需手动维护。
+- 试卷查看支持 Markdown（含表格、列表）与 MathJax 公式，解析两种题目写法：数字题号写法、`###` 结构化题块。
+- 题目标签可跳转到对应知识页面（`assets/js/knowledge-index.js`）。
 
-### 2. 哈希表（开放寻址）
-- 支持线性/二次探测、懒惰删除、ASL 统计。
-- 仅接受整数键，哈希为 `key mod bucketCount`；负数统一取模到正区间。
+## 目录结构
 
-### 3. 字符串匹配
-- **BM**：坏字符 + 好后缀双表，滑窗对齐动画。
-- **KMP**：next / nextval 表计算与匹配回放。
-
-### 4. 计算机组成原理
-- **IEEE 754**：32/64 位浮点编码、手算过程。
-- **进制转换**：二进制/八进制/十六进制互转，按 4 位分组与权重求和演示。
-- **有符号整数**：原码、反码、补码手算步骤。
-- **流水线冲突**：五级流水（IF/ID/EX/MEM/WB），支持转发开关与分支解析阶段选择，自动标注数据/控制冒险与气泡数。
-
-### 5. 学科总导航
-- 入口：`topics.html`，卡片式导航至各模块。
-- 占位页：`arch.html`（组成）、`os.html`（OS）、`network.html`（网络）已预留结构。
+```
+data-structure-visualizer/
+├── assets/
+│   ├── css/
+│   └── js/
+│       ├── exams.js                # 试卷解析与渲染
+│       ├── module-index.js         # 卡片列表渲染（含试卷自动抓取）
+│       └── knowledge-index.js      # 标签到知识页的映射
+├── papers/                         # 放置试卷 Markdown 文件（*.md）
+├── knowledge/                      # 知识库与分类页
+├── topics.html                     # 主页（学科总导航）
+├── exams.html                      # 试卷列表页（自动读取 papers/）
+├── exam-viewer.html                # 试卷查看页（Markdown + MathJax）
+├── index.html                      # 根路径入口（无参数时重定向到主页）
+└── README.md
+```
 
 ## 本地运行
 
-1. 克隆仓库
-```bash
-git clone https://github.com/blueberrycongee/data-structure-visualizer.git
-cd data-structure-visualizer
+- 启动静态服务器（任选其一）
+  - Python：`python -m http.server 5501`
+  - Node：`npx serve -s .`
+
+- 访问路径
+  - 主页：`http://localhost:5501/` 或 `http://localhost:5501/topics.html`
+  - 数据结构导航：`/index.html?go=ds`
+  - 试卷列表：`/exams.html`
+  - 试卷查看：`/exam-viewer.html?paper=文件名.md`
+
+## 添加试卷
+
+- 将试卷 Markdown 文件放入 `papers/` 目录，页面会自动显示为卡片。
+- 点击卡片进入 `exam-viewer.html?paper=文件名.md` 即可查看与答题。
+
+### 试卷 Markdown 规范（兼容当前解析器）
+
+- 顶部标题：`# 试卷标题`
+- 学科分节（四选一，可多次出现）：`### 数据结构`、`### 操作系统`、`### 组成原理`、`### 计算机网络`
+- 题型分节（不要附加分值或括号）：`一、判断题`、`二、选择题`、`三、填空题`、`四、解答题`
+- 两种题目写法任选其一：
+  - 数字题号写法：
+    - `1. 题干……`
+    - 可选 `选项:` 后逐行 `A. ...`/`（A）...`
+    - `答案: B` 或 `答案: 对/错`
+    - `解析:` 多行正文（支持 Markdown 表格与公式）
+    - 可选元信息：`tags:`、`difficulty:`、`knowledge:`
+  - 结构化题块写法：
+    - `### 题目标题`
+    - 可选元信息：`tags:`、`difficulty:`、`knowledge:`
+    - 可选 `题目:` 后正文；支持 `选项:`、`答案:`、`解析:`
+
+### 表格与公式
+
+- 表格使用 Markdown 管道表格，示例：
+
+```
+| 事件 | LAN1 | LAN2 | LAN3 | 网桥动作 |
+|---|---|---|---|---|
+| C发给F一个帧 | A, B | C, D | E, F | 向LAN3 转发 (F在LAN3) |
 ```
 
-2. 启动静态服务器（任选其一）
-```bash
-# Python 3
-python -m http.server 8000
-# Node
-npx serve -s .
-```
+- 公式写法：行内 `$...$`，行间 `$$...$$` 或 `\(...\)`。
 
-3. 浏览器访问
-- 总导航：`http://localhost:8000/topics.html`
-- AVL：`/avl.html`
-- 红黑树：`/red-black.html`
-- 哈希表：`/hash-table.html`
+## 知识标签联动
+
+- 在 `assets/js/knowledge-index.js` 中维护标签到知识页的映射：
+  - 键为标签文本，值为知识页 URL（可带片段锚点）。
+  - 试卷题目中的 `tags` 将显示为“药丸标签”，点击跳转到对应知识页。
+
+## 常见问题
+
+- 试卷列表只显示一套：请刷新缓存；确认试卷在根目录 `papers/` 下，文件扩展名为 `.md`。
+- 试卷查看为空：检查题型分节与题号写法是否符合规范；不要在分节标题后附加分值或括号。
+- 中文文件名乱码：知识页已包含多编码解码；试卷文件名建议使用 UTF-8 存储。
+
+## 主要功能页
+
+- AVL：`/avl.html`，红黑树：`/red-black.html`，哈希表：`/hash-table.html`
 - 字符串匹配：`/bm.html`、`/kmp.html`
 - 流水线：`/pipeline.html`
 - 编码系列：`/encoding.html` → 子页面
 
-## 技术栈
-- 原生 HTML / CSS / ES6+
-- 零第三方运行时依赖（除 `html2canvas` 用于导出截图）
-- 统一资源路径：`assets/css/`、`assets/js/`
+## 版权与许可
 
-## 项目结构
-```
-data-structure-visualizer/
-├── assets/
-│   ├── css/          # 全局与模块样式
-│   └── js/           # 通用控制器与各算法实现
-├── *.html            # 功能页面
-├── progress-report.md # 开发进度与接口文档
-└── README.md         # 本文件
-```
-
-## 通用接口（可复用）
-
-### AnimationStepController
-```js
-const ctrl = new AnimationStepController({
-  nodeContainer: document.getElementById('nodes'),
-  canvas: document.getElementById('lines'),
-  overlayAutoHideMs: 3000,
-  onStep: (step, idx) => { /* 自定义渲染 */ }
-});
-ctrl.bindControls(prevBtn, nextBtn);
-ctrl.setSteps('标题', steps);
-```
-
-### 步骤约定
-```ts
-interface Step {
-  message: string;
-  highlightValues?: number[];
-  snapshot?: any;
-}
-```
-
-更多细节见 `progress-report.md`。
+- 本项目为教学演示用，代码与内容版权归仓库所有者；请在遵循许可证的前提下使用和分发。
 
