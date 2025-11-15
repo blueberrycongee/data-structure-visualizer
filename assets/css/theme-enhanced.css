@@ -10,7 +10,7 @@
 .theme-toggle-enhanced {
   position: fixed;
   top: var(--space-4);
-  right: var(--space-4);
+  right: var(--space-6);
   z-index: var(--z-index-fixed);
   display: inline-flex;
   align-items: center;

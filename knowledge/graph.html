@@ -26,7 +26,7 @@
 <body>
   <div class="home-container">
     <div class="overlay-actions">
-      <a href="ds.html" class="btn" id="backLink">← 返回数据结构库</a>
+      <a href="../topics.html" class="back-link" id="backLink" aria-label="返回首页">← 返回首页</a>
       <button class="btn" id="openSettings">设置</button>
       <input id="search" class="search" placeholder="按标题搜索或高亮" style="width:320px;">
       <button id="toggleIso" class="btn">隐藏孤点</button>
@@ -86,7 +86,7 @@
       function loadText(url){ return fetch(url).then(function(r){ if(!r.ok) throw new Error('x'); return r.arrayBuffer(); }).then(function(buf){ var t; try{ t=new TextDecoder('utf-8').decode(buf); }catch(e){ t=''; } if(/\uFFFD/.test(t)){ try{ var g=new TextDecoder('gbk').decode(buf); if(g && !/\uFFFD/.test(g)) t=g; else { var g2=new TextDecoder('gb18030').decode(buf); if(g2 && !/\uFFFD/.test(g2)) t=g2; } }catch(e){} } return t; }); }
       var cats=[{ name:'查找算法', sub:'查找算法', color:'' },{ name:'逻辑结构相关', sub:'逻辑结构相关', color:'' },{ name:'排序算法', sub:'排序算法', color:'' },{ name:'其他', sub:'其他', color:'' }];
       function isLight(){ return document.documentElement.classList.contains('theme-light'); }
-      function setCatColors(){ if(isLight()){ cats[0].color='#3b82f6'; cats[1].color='#ef4444'; cats[2].color='#22c55e'; cats[3].color='#a855f7'; } else { cats[0].color='rgba(106,163,255,0.85)'; cats[1].color='rgba(255,142,142,0.85)'; cats[2].color='rgba(125,215,160,0.85)'; cats[3].color='rgba(182,156,255,0.85)'; } }
+      function setCatColors(){ cats[0].color='rgba(106,163,255,0.85)'; cats[1].color='rgba(255,142,142,0.85)'; cats[2].color='rgba(125,215,160,0.85)'; cats[3].color='rgba(182,156,255,0.85)'; }
       var legend=document.getElementById('legend');
       function updateLegend(){ legend.innerHTML=cats.map(function(c){ return '<span class="pill" style="border-color:'+c.color+'; color:'+c.color+'">'+esc(c.name)+'</span>'; }).join(''); }
       setCatColors(); updateLegend();
