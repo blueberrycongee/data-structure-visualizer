@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>笔记编辑器</title>
+  <link rel="stylesheet" href="assets/css/home.css">
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']], processEscapes: true }, svg: { fontCache: 'global' } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it-container@3.0.0/dist/markdown-it-container.min.js"></script>
+  <style>
+    .content-section { margin: 28px 10px; }
+    .editor-wrap { display:flex; gap:12px; align-items:stretch; }
+    .pane { flex:1; background: var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px; }
+    .pane h3 { margin:8px 0; }
+    .editor { width:100%; height:60vh; border:1px solid var(--line); border-radius:8px; padding:10px; background: var(--bg); color: var(--fg); }
+    .preview { line-height:1.8; }
+    .toolbar { display:flex; gap:8px; align-items:center; margin: 0 10px 12px 10px; }
+    .btn { padding:6px 10px; border:1px solid var(--line); background: var(--surface); border-radius:8px; cursor:pointer; }
+    .btn:hover { background: var(--surface-hover); border-color: var(--accent); color: var(--accent); }
+    .input { padding:8px 10px; border:1px solid var(--line); border-radius:8px; background: var(--bg); color: var(--fg); }
+  </style>
+</head>
+<body>
+  <div class="home-container">
+    <header class="header">
+      <a href="topics.html" class="back-link" style="position:absolute;left:20px;top:20px;">← 返回首页</a>
+      <h1>笔记编辑器</h1>
+      <p class="subtitle">编辑或上传 Markdown 笔记，支持公式与 callout</p>
+    </header>
+    <main class="main-content">
+      <div class="toolbar">
+        <button class="btn" id="newNote">新建</button>
+        <input type="file" id="openFile" accept=".md,.markdown,text/markdown" class="input">
+        <input type="text" id="fileName" class="input" placeholder="文件名.md" style="width:220px;" value="新笔记.md">
+        <button class="btn" id="saveDownload">保存为文件</button>
+        <button class="btn" id="saveToDir">保存到文件夹</button>
+        <input type="text" id="cmd" class="input" placeholder="命令，例如: title 迭代对数" style="flex:1;">
+        <button class="btn" id="applyCmd">应用命令</button>
+      </div>
+      <section class="content-section editor-wrap">
+        <div class="pane">
+          <h3>编辑</h3>
+          <textarea id="editor" class="editor" spellcheck="false"></textarea>
+        </div>
+        <div class="pane">
+          <h3>预览</h3>
+          <article id="preview" class="preview"></article>
+        </div>
+      </section>
+    </main>
+    <footer class="footer"><p>笔记编辑器 © 2024</p></footer>
+  </div>
+  <script>
+    (function(){
+      function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      function setupMd(){ var md=window.markdownit({ html:true, linkify:true, typographer:true }); md.inline.ruler.before('emphasis','math_inline',function(state,silent){ var src=state.src, pos=state.pos; if(src.charCodeAt(pos)!==0x24) return false; var start=pos+1; if(src.charCodeAt(start)===0x24) return false; if(start>=src.length || /\s/.test(src[start])) return false; var end=start; var found=false; while((end=src.indexOf('$', end))>-1){ if(end>start && src.charCodeAt(end-1)!==0x5C){ if(/\s/.test(src[end-1])) { end++; continue; } if(src.charCodeAt(end+1)===0x24) { end++; continue; } found=true; break; } end++; } if(!found) return false; var content=src.slice(start, end); if(!silent){ var token=state.push('math_inline','',0); token.content=content; } state.pos=end+1; return true; }); md.renderer.rules.math_inline=function(tokens, idx){ var c=tokens[idx].content; return '\\('+md.utils.escapeHtml(c)+'\\)'; }; md.use(window.markdownitContainer, 'callout', { validate:function(params){ return /^callout\b/.test(params.trim()); }, render:function(tokens, idx){ var info=(tokens[idx].info||'').trim(); var rest=info.replace(/^callout\b\s*/, ''); var mTitle=rest.match(/title=\"([\s\S]*?)\"/); var title=mTitle?mTitle[1]:''; rest=rest.replace(/title=\"[\s\S]*?\"/,'').trim(); var type='note'; var collapsed=false; rest.split(/\s+/).forEach(function(seg){ if(!seg) return; var kv=seg.split('='); var k=kv[0]; var v=kv[1]; if(k==='type'){ type=String(v||'note').toLowerCase(); } else if(k==='collapsed'){ collapsed=(String(v)==='true'); } }); var map={ note:'note', warning:'warning', danger:'danger' }; var t=map[type]||'note'; if(tokens[idx].nesting===1){ var cls='callout callout-'+t+(collapsed?' collapsed':''); var titleHtml=md.renderInline(title||type); return '<div class="'+cls+'"><div class="callout-title">'+titleHtml+'</div><div class="callout-content">'; } else { return '</div></div>'; } } }); return md; }
+      var md=setupMd();
+      function render(){ var el=document.getElementById('preview'); var src=document.getElementById('editor').value||''; src = src.replace(/(^|\n)[ \t]*\$\$([\s\S]*?)\$\$[ \t]*(?=\n|$)/g, function(_, pre, math){ var content=String(math||'').replace(/^\s+|\s+$/g,''); return pre+'\n<div class="mjx-block">\\['+content+'\\]</div>\n'; }); var html=md.render(src); el.innerHTML=html; if(window.MathJax && window.MathJax.typesetPromise){ window.MathJax.typesetPromise([el]); } }
+      var editor=document.getElementById('editor'); editor.addEventListener('input', render);
+      function newNote(){ editor.value='---\n# 新笔记\n\n'; render(); }
+      document.getElementById('newNote').addEventListener('click', newNote);
+      document.getElementById('openFile').addEventListener('change', function(){ var f=this.files&&this.files[0]; if(!f) return; var reader=new FileReader(); reader.onload=function(){ editor.value=String(reader.result||''); render(); }; reader.readAsText(f); document.getElementById('fileName').value=f.name||'笔记.md'; });
+      document.getElementById('saveDownload').addEventListener('click', function(){ var name=document.getElementById('fileName').value||'笔记.md'; var blob=new Blob([editor.value||''], {type:'text/markdown'}); var a=document.createElement('a'); a.download=name; a.href=URL.createObjectURL(blob); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 0); });
+      var dirHandle=null;
+      document.getElementById('saveToDir').addEventListener('click', async function(){ try{ if(!dirHandle){ dirHandle = await window.showDirectoryPicker(); } var name=document.getElementById('fileName').value||'笔记.md'; var h=await dirHandle.getFileHandle(name, { create:true }); var w=await h.createWritable(); await w.write(editor.value||''); await w.close(); }catch(e){} });
+      function applyCmd(){ var s=(document.getElementById('cmd').value||'').trim(); if(!s) return; var parts=s.split(/\s+/); var head=parts[0].toLowerCase(); if(head==='title'){ var rest=s.replace(/^title\s+/i,''); editor.value = '# '+rest+'\n\n'+editor.value; } else if(head==='tags'){ var rest=s.replace(/^tags\s+/i,''); var arr=rest.split(/[,\s]+/).filter(Boolean).map(function(x){ return '"'+x+'"'; }); var fm='---\ntags: ['+arr.join(', ')+']\n---\n'; editor.value = fm + '\n' + editor.value; } else if(head==='callout'){ var type=parts[1]||'note'; var title=s.replace(/^callout\s+\w+\s*/i,''); var chunk='::: callout type='+type+' title="'+title+'"\n内容\n:::\n\n'; var pos=editor.selectionStart||0; editor.value = editor.value.slice(0,pos) + chunk + editor.value.slice(pos); } else if(/^h[1-6]$/.test(head)){ var lvl=parseInt(head[1],10)||1; var text=s.replace(/^h[1-6]\s+/i,''); editor.value = editor.value + '\n' + Array(lvl+1).join('#') + ' ' + text + '\n'; } render(); document.getElementById('cmd').value=''; }
+      document.getElementById('applyCmd').addEventListener('click', applyCmd);
+      newNote();
+    })();
+  </script>
+  <script src="assets/js/theme.js"></script>
+</body>
+</html>
