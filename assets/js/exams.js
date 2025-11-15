@@ -25,7 +25,33 @@
   function isOptionLine(t){ return /^(\(?[A-Z]\)|（[A-Z]）)/.test(t) || /^([A-Z])\s*[\.．、]/.test(t); }
   function cleanupBody(s){ var x=String(s||''); x=x.replace(/^[\s\t]*(\r?\n)+/, ''); x=x.replace(/(\r?\n){3,}/g, '\n\n'); x=x.replace(/(\r?\n)+\s*$/, ''); x=x.split(/\r?\n/).map(function(l){ return l.replace(/^[\s\u00A0\u3000]+/, ''); }).join('\n'); return x; }
   function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  function mdRenderer(){ try{ if(window.markdownit){ return window.markdownit({ html:false, linkify:true, typographer:true }); } }catch(e){} return null; }
+  function mdRenderer(){
+    try{
+      if(window.markdownit){
+        var md = window.markdownit({ html:false, linkify:true, typographer:true });
+        md.inline.ruler.before('emphasis','math_inline',function(state,silent){
+          var src=state.src, pos=state.pos; if(src.charCodeAt(pos)!==0x24) return false;
+          var start=pos+1; if(src.charCodeAt(start)===0x24) return false;
+          if(start>=src.length || /\s/.test(src[start])) return false;
+          var end=start; var found=false;
+          while((end=src.indexOf('$', end))>-1){
+            if(end>start && src.charCodeAt(end-1)!==0x5C){
+              if(/\s/.test(src[end-1])) { end++; continue; }
+              if(src.charCodeAt(end+1)===0x24) { end++; continue; }
+              found=true; break;
+            }
+            end++;
+          }
+          if(!found) return false; var content=src.slice(start, end);
+          if(!silent){ var token=state.push('math_inline','',0); token.content=content; }
+          state.pos=end+1; return true;
+        });
+        md.renderer.rules.math_inline=function(tokens, idx){ var c=tokens[idx].content; return '\\('+md.utils.escapeHtml(c)+'\\)'; };
+        return md;
+      }
+    }catch(e){}
+    return null;
+  }
   var MD = mdRenderer();
   function renderMd(text){ var t=String(text||''); if(MD){ try{ return MD.render(t); }catch(e){ return esc(t); } } return esc(t); }
   function paperKey(){ return qs('paper') || 'paper'; }

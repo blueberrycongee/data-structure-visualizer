@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>知识图谱</title>
+  <link rel="stylesheet" href="../assets/css/home.css">
+  <link rel="stylesheet" href="../assets/css/theme.css">
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+  <style>
+    .content-section { margin: 0; }
+    .toolbar { display:flex; gap:10px; align-items:center; margin:0 10px 12px 10px; }
+    .search { flex:1; padding:8px 10px; border:1px solid #e6eaf2; border-radius:8px; }
+    .btn { padding:6px 10px; border:1px solid #e6eaf2; background:#f8f9fa; border-radius:8px; cursor:pointer; }
+    .btn:hover { background:#eef6ff; border-color:#00c6ff; color:#0072ff; }
+    .pill { display:inline-flex; align-items:center; padding:6px 10px; border-radius:16px; border:1px solid #e6eaf2; background:#f8f9fa; margin:4px; font-size:13px; }
+    .legend { position:fixed; left:12px; bottom:12px; display:flex; gap:6px; flex-wrap:wrap; z-index:101; }
+    .graph-wrap { position:fixed; inset:0; margin:0; background: var(--bg, #fff); overflow:hidden; z-index:1; }
+    canvas#graph { width:100vw; height:100vh; }
+    .hint { margin: 10px; padding: 12px; border:1px dashed #e6eaf2; border-radius:8px; background:#fafbfc; }
+    .overlay-actions { position:fixed; top:12px; left:12px; display:flex; gap:8px; z-index:110; }
+    .settings-panel { position:fixed; right:0; top:0; width:320px; height:100vh; background: var(--surface); border-left:1px solid var(--line); box-shadow: -4px 0 16px rgba(0,0,0,0.08); transform: translateX(100%); transition: transform .25s ease; z-index:200; padding:12px; overflow:auto; }
+    .settings-panel.open { transform: translateX(0); }
+  </style>
+</head>
+<body>
+  <div class="home-container">
+    <div class="overlay-actions">
+      <a href="ds.html" class="btn" id="backLink">← 返回数据结构库</a>
+      <button class="btn" id="openSettings">设置</button>
+      <input id="search" class="search" placeholder="按标题搜索或高亮" style="width:320px;">
+      <button id="toggleIso" class="btn">隐藏孤点</button>
+      <button id="toggleRun" class="btn">播放动画</button>
+      <button id="resetView" class="btn">重置视图</button>
+    </div>
+    <div class="legend" id="legend"></div>
+    <section class="content-section">
+      <div class="graph-wrap"><canvas id="graph"></canvas></div>
+      <aside class="settings-panel" id="settingsPanel">
+          <details open>
+            <summary class="pill" style="display:block;">外观</summary>
+            <div style="margin:8px 0; display:flex; align-items:center; justify-content:space-between;">
+              <span>箭头</span>
+              <label class="switch"><input type="checkbox" id="showArrows"><span class="pill" style="padding:4px 10px;">开关</span></label>
+            </div>
+            <div style="margin:8px 0;">
+              <div>文本透明度</div>
+              <input id="textAlpha" type="range" min="0" max="1" step="any" value="1" style="width:100%;">
+            </div>
+            <div style="margin:8px 0;">
+              <div>节点大小</div>
+              <input id="nodeSize" type="range" min="4" max="20" step="any" value="8" style="width:100%;">
+            </div>
+            <div style="margin:8px 0;">
+              <div>连线粗细</div>
+              <input id="edgeWidth" type="range" min="1" max="5" step="any" value="1.5" style="width:100%;">
+            </div>
+          </details>
+          <details open>
+            <summary class="pill" style="display:block;">力度</summary>
+            <div style="margin:8px 0;">
+              <div>图谱向心力</div>
+              <input id="gravity" type="range" min="0.003" max="0.06" step="any" value="0.012" style="width:100%;">
+            </div>
+            <div style="margin:8px 0;">
+              <div>节点间的排斥力</div>
+              <input id="repulsion" type="range" min="100" max="5000" step="any" value="600" style="width:100%;">
+            </div>
+            <div style="margin:8px 0;">
+              <div>相连节点间的吸引力</div>
+              <input id="spring" type="range" min="0" max="0.2" step="any" value="0.04" style="width:100%;">
+            </div>
+            <div style="margin:8px 0;">
+              <div>连线长度</div>
+              <input id="restLen" type="range" min="30" max="120" step="any" value="50" style="width:100%;">
+            </div>
+          </details>
+      </aside>
+      <div id="empty" class="hint hidden">未发现可解析的知识文件或链接。</div>
+    </section>
+  </div>
+  <script>
+    (function(){
+      function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+      function readList(url){ return fetch(url).then(function(r){ if(!r.ok) throw new Error('x'); return r.arrayBuffer(); }).then(function(buf){ function tryDec(enc){ try{ return new TextDecoder(enc).decode(buf); }catch(e){ return ''; } } var txt=tryDec('utf-8'); if(/\uFFFD/.test(txt)){ var gbk=tryDec('gbk'); if(gbk && !/\uFFFD/.test(gbk)) txt=gbk; else { var g=tryDec('gb18030'); if(g && !/\uFFFD/.test(g)) txt=g; } } return txt.replace(/\r\n/g,'\n').split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l && /\.md$/i.test(l); }); }).catch(function(){ return []; }); }
+      function loadText(url){ return fetch(url).then(function(r){ if(!r.ok) throw new Error('x'); return r.arrayBuffer(); }).then(function(buf){ var t; try{ t=new TextDecoder('utf-8').decode(buf); }catch(e){ t=''; } if(/\uFFFD/.test(t)){ try{ var g=new TextDecoder('gbk').decode(buf); if(g && !/\uFFFD/.test(g)) t=g; else { var g2=new TextDecoder('gb18030').decode(buf); if(g2 && !/\uFFFD/.test(g2)) t=g2; } }catch(e){} } return t; }); }
+      var cats=[{ name:'查找算法', sub:'查找算法', color:'' },{ name:'逻辑结构相关', sub:'逻辑结构相关', color:'' },{ name:'排序算法', sub:'排序算法', color:'' },{ name:'其他', sub:'其他', color:'' }];
+      function isLight(){ return document.documentElement.classList.contains('theme-light'); }
+      function setCatColors(){ if(isLight()){ cats[0].color='#3b82f6'; cats[1].color='#ef4444'; cats[2].color='#22c55e'; cats[3].color='#a855f7'; } else { cats[0].color='rgba(106,163,255,0.85)'; cats[1].color='rgba(255,142,142,0.85)'; cats[2].color='rgba(125,215,160,0.85)'; cats[3].color='rgba(182,156,255,0.85)'; } }
+      var legend=document.getElementById('legend');
+      function updateLegend(){ legend.innerHTML=cats.map(function(c){ return '<span class="pill" style="border-color:'+c.color+'; color:'+c.color+'">'+esc(c.name)+'</span>'; }).join(''); }
+      setCatColors(); updateLegend();
+
+      Promise.all(cats.map(function(c){ return readList('ds/'+c.sub+'/filenames.txt').then(function(list){ return { cat:c, files:list||[] }; }); })).then(function(groups){
+        var nodes=[]; var nodeMap={}; var edges=[];
+        groups.forEach(function(g){ g.files.forEach(function(f){ var id='ds/'+g.cat.sub+'/'+f; var title=String(f).replace(/\.md$/i,''); var n={ id:id, title:title, cat:g.cat, x:(Math.random()*2-1)*200, y:(Math.random()*2-1)*200, vx:0, vy:0, pinned:false, degree:0 }; nodes.push(n); nodeMap[id]=n; }); });
+        var tasks = nodes.map(function(n){ return loadText(n.id).then(function(txt){ var links=[]; String(txt||'').replace(/\]\(([^)]+\.md)\)/ig, function(_,m){ links.push(m); }); String(txt||'').replace(/md\.html\?file=([^&\s\)]+\.md)/ig, function(_,m){ links.push(m); }); String(txt||'').replace(/\[\[([^\]]+)\]\]/g, function(_, inner){ links.push('[[ '+inner+' ]]'); });
+          links.forEach(function(h){
+            if(/^\[\[/.test(h)){ // Obsidian wikilink
+              var inner = h.replace(/^\[\[/,'').replace(/\]\]$/,'').trim();
+              var base = inner.split('|')[0].trim();
+              var anchorSplit = base.split('#');
+              var refPath = anchorSplit[0].trim();
+              var title = refPath.replace(/\.md$/i,'');
+              var targetId=null;
+              if(/\//.test(refPath)){
+                // e.g. 查找算法/散列 或 ds/查找算法/散列
+                var p = refPath.replace(/^ds\//,'');
+                targetId = 'ds/'+ p.replace(/\.md$/i,'') + '.md';
+                if(!nodeMap[targetId]) targetId=null;
+              }
+              if(!targetId){
+                // prefer same分类下匹配文件名
+                var guess = 'ds/'+ n.cat.sub + '/' + title + '.md';
+                if(nodeMap[guess]) targetId=guess;
+              }
+              if(!targetId){
+                // fallback 全局按标题匹配
+                var low = title.toLowerCase();
+                for(var k in nodeMap){ if(Object.prototype.hasOwnProperty.call(nodeMap,k)){ var nn=nodeMap[k]; if(nn.title.toLowerCase()===low){ targetId=nn.id; break; } } }
+              }
+              if(targetId && nodeMap[targetId]){ edges.push({ source:n.id, target:targetId }); nodeMap[n.id].degree++; nodeMap[targetId].degree++; }
+              return;
+            }
+            var t=h.replace(/^\.\//,'').replace(/^\/?knowledge\//,'').replace(/^\/?/,''); if(!/\.md$/i.test(t)) return; var norm=t; if(!/^ds\//.test(norm)){ var parts=norm.split('/'); if(parts.length>=2 && parts[0]==='ds'){ norm=norm; } }
+            if(nodeMap[norm]){ edges.push({ source:n.id, target:norm }); nodeMap[n.id].degree++; nodeMap[norm].degree++; }
+          }); }).catch(function(){}); });
+        Promise.all(tasks).then(function(){ initGraph(nodes, edges); });
+      });
+
+      function initGraph(nodes, edges){
+        var canvas=document.getElementById('graph'); var ctx=canvas.getContext('2d');
+        function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+        resize(); window.addEventListener('resize', resize);
+        var scale=1, offsetX=canvas.width/2, offsetY=canvas.height/2, running=true, hideIso=false;
+        var search=document.getElementById('search'); var toggleIso=document.getElementById('toggleIso'); var toggleRun=document.getElementById('toggleRun'); var resetView=document.getElementById('resetView'); var openSettings=document.getElementById('openSettings'); var settingsPanel=document.getElementById('settingsPanel');
+        var cfg={ showArrows:false, textAlpha:1, nodeSize:8, edgeWidth:1.5, gravity:0.012, repulsion:600, spring:0.04, restLen:50 };
+        var minG=0.003;
+        function getVar(n, fb){ var v=getComputedStyle(document.documentElement).getPropertyValue(n).trim(); return v||fb; }
+        var colorLine = getVar('--line', '#cad6e2');
+        var colorText = getVar('--fg', '#0b1220');
+        var colorBG = getVar('--bg', '#ffffff');
+        function refreshTheme(){ colorLine=getVar('--line', '#cad6e2'); colorText=getVar('--fg', '#0b1220'); colorBG=getVar('--bg', '#ffffff'); setCatColors(); updateLegend(); }
+        toggleIso.addEventListener('click', function(){ hideIso=!hideIso; draw(); });
+        toggleRun.addEventListener('click', function(){ running=!running; toggleRun.textContent = running ? '暂停布局' : '播放动画'; });
+        // init button label according to default running state
+        toggleRun.textContent = running ? '暂停布局' : '播放动画';
+        resetView.addEventListener('click', function(){ scale=1; offsetX=canvas.width/2; offsetY=canvas.height/2; draw(); });
+        search.addEventListener('input', draw);
+        var showArrows=document.getElementById('showArrows'); var textAlpha=document.getElementById('textAlpha'); var nodeSize=document.getElementById('nodeSize'); var edgeWidth=document.getElementById('edgeWidth'); var gravity=document.getElementById('gravity'); var repulsion=document.getElementById('repulsion'); var spring=document.getElementById('spring'); var restLen=document.getElementById('restLen');
+        showArrows.addEventListener('change', function(){ cfg.showArrows=!!showArrows.checked; draw(); });
+        textAlpha.addEventListener('input', function(){ cfg.textAlpha=parseFloat(textAlpha.value||'1'); draw(); });
+        nodeSize.addEventListener('input', function(){ cfg.nodeSize=parseFloat(nodeSize.value||'8'); draw(); });
+        edgeWidth.addEventListener('input', function(){ cfg.edgeWidth=parseFloat(edgeWidth.value||'1'); draw(); });
+        gravity.addEventListener('input', function(){ cfg.gravity=parseFloat(gravity.value||'0'); });
+        repulsion.addEventListener('input', function(){ cfg.repulsion=parseFloat(repulsion.value||'1000'); });
+        spring.addEventListener('input', function(){ cfg.spring=parseFloat(spring.value||'0.02'); });
+        restLen.addEventListener('input', function(){ cfg.restLen=parseFloat(restLen.value||'100'); });
+        canvas.addEventListener('wheel', function(e){ e.preventDefault(); var k=e.deltaY<0?1.1:0.9; var mx=e.offsetX, my=e.offsetY; var x0=(mx - offsetX)/scale, y0=(my - offsetY)/scale; scale*=k; offsetX=mx - x0*scale; offsetY=my - y0*scale; });
+        var dragging=null; var dragPan=false; var last={x:0,y:0}; var downNode=null; var downSX=0, downSY=0; var moved=false; var moveThresh=5;
+        canvas.addEventListener('mousedown', function(e){ var p=screenToWorld(e.offsetX, e.offsetY); var hit=findNode(p.x, p.y); downNode=null; moved=false; if(hit){ dragging=hit; dragging.pinned=true; downNode=hit; downSX=e.offsetX; downSY=e.offsetY; } else { dragPan=true; last.x=e.offsetX; last.y=e.offsetY; } });
+        window.addEventListener('mouseup', function(e){ if(dragging){ dragging.pinned=false; } var dx=e.offsetX-downSX, dy=e.offsetY-downSY; var dist=Math.sqrt(dx*dx+dy*dy); if(downNode && dist<moveThresh){ var url='md.html?file='+ encodeURIComponent(downNode.id) +'&from=ds'; window.open(url, '_blank'); } dragging=null; dragPan=false; downNode=null; moved=false; });
+        window.addEventListener('mousemove', function(e){ if(dragging){ var p=screenToWorld(e.offsetX, e.offsetY); dragging.x=p.x; dragging.y=p.y; dragging.vx=0; dragging.vy=0; var ddx=e.offsetX-downSX, ddy=e.offsetY-downSY; if((ddx*ddx+ddy*ddy)>(moveThresh*moveThresh)) moved=true; } else if(dragPan){ var dx=e.offsetX-last.x, dy=e.offsetY-last.y; offsetX+=dx; offsetY+=dy; last.x=e.offsetX; last.y=e.offsetY; } });
+        
+        if(openSettings){ openSettings.addEventListener('click', function(){ settingsPanel.classList.toggle('open'); }); }
+        document.addEventListener('keydown', function(e){ if((e.key||'').toLowerCase()==='s' && !e.ctrlKey && !e.altKey){ settingsPanel.classList.toggle('open'); } });
+        window.addEventListener('themechange', function(){ refreshTheme(); draw(); });
+        function screenToWorld(sx,sy){ return { x:(sx - offsetX)/scale, y:(sy - offsetY)/scale }; }
+        function worldToScreen(x,y){ return { x:x*scale + offsetX, y:y*scale + offsetY }; }
+        function findNode(x,y){ var r=8/scale; for(var i=nodes.length-1;i>=0;i--){ var n=nodes[i]; if(hideIso && n.degree===0) continue; var dx=n.x-x, dy=n.y-y; if(dx*dx+dy*dy<=r*r) return n; } return null; }
+        function step(){ if(!running) return; var kSpring=cfg.spring, rest=cfg.restLen, repel=cfg.repulsion, damping=0.92, vMax=2.0; var gEff = Math.max(cfg.gravity, minG);
+          for(var i=0;i<nodes.length;i++){ var a=nodes[i]; for(var j=i+1;j<nodes.length;j++){ var b=nodes[j]; var dx=a.x-b.x, dy=a.y-b.y; var d2=dx*dx+dy*dy + 100; var d=Math.sqrt(d2); var f=repel/d2; var fx=f*dx/d, fy=f*dy/d; if(!a.pinned){ a.vx+=fx; a.vy+=fy; } if(!b.pinned){ b.vx-=fx; b.vy-=fy; } } }
+          for(var e=0;e<edges.length;e++){ var ed=edges[e]; var a=nodeById(ed.source), b=nodeById(ed.target); var dx=b.x-a.x, dy=b.y-a.y; var d=Math.sqrt(dx*dx+dy*dy)+0.001; var diff=d - rest; var f=kSpring*diff; var fx=f*dx/d, fy=f*dy/d; if(!a.pinned){ a.vx+=fx; a.vy+=fy; } if(!b.pinned){ b.vx-=fx; b.vy-=fy; } }
+          for(var i=0;i<nodes.length;i++){ var n=nodes[i]; if(!n.pinned){ n.vx-=gEff*n.x; n.vy-=gEff*n.y; } }
+          for(var i=0;i<nodes.length;i++){ var n=nodes[i]; n.vx*=damping; n.vy*=damping; if(n.vx>vMax) n.vx=vMax; if(n.vx<-vMax) n.vx=-vMax; if(n.vy>vMax) n.vy=vMax; if(n.vy<-vMax) n.vy=-vMax; if(!n.pinned){ n.x+=n.vx; n.y+=n.vy; } }
+        }
+        function nodeById(id){ return nodes.find(function(n){ return n.id===id; }); }
+        function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); colorLine=getVar('--line', '#cad6e2'); colorText=getVar('--fg', '#0b1220'); var q=(search.value||'').trim().toLowerCase(); var hover=null; var mx=last.x, my=last.y;
+          for(var i=0;i<edges.length;i++){ var ed=edges[i]; var a=nodeById(ed.source), b=nodeById(ed.target); if(hideIso && (a.degree===0 || b.degree===0)) continue; var pa=worldToScreen(a.x,a.y), pb=worldToScreen(b.x,b.y); ctx.strokeStyle=colorLine; ctx.lineWidth=cfg.edgeWidth; ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke(); if(cfg.showArrows){ var ang=Math.atan2(pb.y-pa.y, pb.x-pa.x); var al=10; var aw=4; var ax=pb.x - Math.cos(ang)*12; var ay=pb.y - Math.sin(ang)*12; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(ax - Math.cos(ang - Math.PI/6)*al, ay - Math.sin(ang - Math.PI/6)*al); ctx.lineTo(ax - Math.cos(ang + Math.PI/6)*al, ay - Math.sin(ang + Math.PI/6)*al); ctx.closePath(); ctx.fillStyle=colorLine; ctx.fill(); }
+          }
+          for(var i=0;i<nodes.length;i++){ var n=nodes[i]; if(hideIso && n.degree===0) continue; var p=worldToScreen(n.x,n.y); var rad=cfg.nodeSize + Math.min(8, n.degree);
+            var title=n.title.toLowerCase(); var hl=q && title.indexOf(q)>-1; ctx.fillStyle=hl? '#ffb020' : n.cat.color; ctx.beginPath(); ctx.arc(p.x,p.y,rad,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=colorLine; ctx.lineWidth=1; ctx.stroke(); ctx.save(); ctx.globalAlpha = cfg.textAlpha; ctx.fillStyle=colorText; ctx.font='12px system-ui, sans-serif'; ctx.fillText(n.title, p.x+rad+4, p.y+4); ctx.restore();
+          }
+        }
+        function loop(){ step(); draw(); requestAnimationFrame(loop); }
+        function prewarm(k){ var kSpring=cfg.spring*0.6, rest=cfg.restLen, repel=cfg.repulsion*0.6, damping=0.94, vMax=1.6; var gEff=Math.max(cfg.gravity, minG); for(var t=0;t<k;t++){ for(var i=0;i<nodes.length;i++){ var a=nodes[i]; for(var j=i+1;j<nodes.length;j++){ var b=nodes[j]; var dx=a.x-b.x, dy=a.y-b.y; var d2=dx*dx+dy*dy + 150; var d=Math.sqrt(d2); var f=repel/d2; var fx=f*dx/d, fy=f*dy/d; a.vx+=fx; a.vy+=fy; b.vx-=fx; b.vy-=fy; } } for(var e=0;e<edges.length;e++){ var ed=edges[e]; var a=nodeById(ed.source), b=nodeById(ed.target); var dx=b.x-a.x, dy=b.y-a.y; var d=Math.sqrt(dx*dx+dy*dy)+0.001; var diff=d - rest; var f=kSpring*diff; var fx=f*dx/d, fy=f*dy/d; a.vx+=fx; a.vy+=fy; b.vx-=fx; b.vy-=fy; } for(var i=0;i<nodes.length;i++){ var n=nodes[i]; n.vx-=gEff*n.x; n.vy-=gEff*n.y; n.vx*=damping; n.vy*=damping; if(n.vx>vMax) n.vx=vMax; if(n.vx<-vMax) n.vx=-vMax; if(n.vy>vMax) n.vy=vMax; if(n.vy<-vMax) n.vy=-vMax; n.x+=n.vx; n.y+=n.vy; } } draw(); }
+        prewarm(200); loop();
+      }
+    })();
+  </script>
+  <script src="../assets/js/theme.js"></script>
+</body>
+</html>
