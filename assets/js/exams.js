@@ -25,6 +25,9 @@
   function isOptionLine(t){ return /^(\(?[A-Z]\)|（[A-Z]）)/.test(t) || /^([A-Z])\s*[\.．、]/.test(t); }
   function cleanupBody(s){ var x=String(s||''); x=x.replace(/^[\s\t]*(\r?\n)+/, ''); x=x.replace(/(\r?\n){3,}/g, '\n\n'); x=x.replace(/(\r?\n)+\s*$/, ''); x=x.split(/\r?\n/).map(function(l){ return l.replace(/^[\s\u00A0\u3000]+/, ''); }).join('\n'); return x; }
   function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function mdRenderer(){ try{ if(window.markdownit){ return window.markdownit({ html:false, linkify:true, typographer:true }); } }catch(e){} return null; }
+  var MD = mdRenderer();
+  function renderMd(text){ var t=String(text||''); if(MD){ try{ return MD.render(t); }catch(e){ return esc(t); } } return esc(t); }
   function paperKey(){ return qs('paper') || 'paper'; }
   function loadProf(){ try{ var k='exam_proficiency:'+paperKey(); var s=localStorage.getItem(k); return s?JSON.parse(s):{}; }catch(e){ return {}; } }
   function saveProf(obj){ try{ var k='exam_proficiency:'+paperKey(); localStorage.setItem(k, JSON.stringify(obj||{})); }catch(e){} }
@@ -133,11 +136,11 @@
       var optsHTML = (q.options||[]).length?('<div class="q-options">'+q.options.map(function(o){ return '<div>'+esc(o)+'</div>'; }).join('')+'</div>'):'';
       var meta = [q.difficulty?('难度：'+q.difficulty):'', (q.knowledge||'')].filter(Boolean).join(' · ');
       var solBtn = '<div class="q-ops"><button class="btn btn-sol" data-toggle="sol" data-idx="'+idx+'">解析</button>'+ (learnHref?('<a class="btn" href="'+learnHref+'">去学</a>'):'') +'</div>';
-      var sol = (function(){ var ans = q.answer?('<div><strong>答案：</strong>'+ esc(q.answer) +'</div>') : ''; var body = esc(q.solution || '解析占位（待补充）'); return '<div class="q-solution hidden" id="sol-'+idx+'">'+ ans +'<div style="white-space:pre-wrap;">'+ body +'</div></div>'; })();
+      var sol = (function(){ var ans = q.answer?('<div><strong>答案：</strong>'+ esc(q.answer) +'</div>') : ''; var body = renderMd(q.solution || '解析占位（待补充）'); return '<div class="q-solution hidden" id="sol-'+idx+'">'+ ans +'<div class="md-body">'+ body +'</div></div>'; })();
       var r = parseInt(prof[String(idx)]||0,10);
       var labels = {1:'初看懂',2:'仿着做',3:'查资料',4:'独立解',5:'能迁移'};
       var rate = '<div class="q-rate">'+[1,2,3,4,5].map(function(n){ return '<button class="pill'+(r===n?' active':'')+'" data-rating="'+n+'" data-idx="'+idx+'">'+n+'级·'+labels[n]+'</button>'; }).join('')+'</div>';
-      return '<div class="question" id="q-'+idx+'"><div class="q-title">'+ (q.title || ('第 '+(idx+1)+' 题')) +'</div><div class="q-meta">'+ meta +'</div><div class="q-body" style="white-space:pre-line;">'+ esc(q.body || '') +'</div>'+ optsHTML + rate +'<div class="q-tags">'+tagsHTML+'</div>'+ solBtn + sol +'</div>';
+      return '<div class="question" id="q-'+idx+'"><div class="q-title">'+ (q.title || ('第 '+(idx+1)+' 题')) +'</div><div class="q-meta">'+ meta +'</div><div class="q-body">'+ renderMd(q.body || '') +'</div>'+ optsHTML + rate +'<div class="q-tags">'+tagsHTML+'</div>'+ solBtn + sol +'</div>';
     }).join('');
     if(window.MathJax && window.MathJax.typesetPromise){ window.MathJax.typesetPromise([container]); }
   }

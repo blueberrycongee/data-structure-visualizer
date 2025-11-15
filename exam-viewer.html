@@ -10,6 +10,7 @@
     window.MathJax = { tex: { inlineMath: [['$','$'], ['\\(','\\)']] }, svg: { fontCache: 'global' } };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
   <style>
     .content-section { margin: 28px 10px; }
     .toolbar { display:flex; gap:12px; align-items:center; margin: 0 10px 16px 10px; }
@@ -29,6 +30,10 @@
     .search { flex:1; padding:8px 10px; border:1px solid #e6eaf2; border-radius:8px; }
     .pill.active { background:#dff1ff; border-color:#00aaff; color:#0066cc; }
     .q-rate { margin-top:8px; }
+    .q-body table { width:100%; border-collapse: collapse; margin:8px 0; }
+    .q-body th, .q-body td { border:1px solid #e6eaf2; padding:6px 8px; }
+    .q-solution table { width:100%; border-collapse: collapse; margin:8px 0; }
+    .q-solution th, .q-solution td { border:1px solid #e6eaf2; padding:6px 8px; }
   </style>
   </head>
 <body>
