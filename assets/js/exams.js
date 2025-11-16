@@ -57,6 +57,8 @@
   function paperKey(){ return qs('paper') || 'paper'; }
   function loadProf(){ try{ var k='exam_proficiency:'+paperKey(); var s=localStorage.getItem(k); return s?JSON.parse(s):{}; }catch(e){ return {}; } }
   function saveProf(obj){ try{ var k='exam_proficiency:'+paperKey(); localStorage.setItem(k, JSON.stringify(obj||{})); }catch(e){} }
+  function loadAttempts(){ try{ var k='exam_attempts:'+paperKey(); var s=localStorage.getItem(k); return s?JSON.parse(s):{}; }catch(e){ return {}; } }
+  function saveAttempts(obj){ try{ var k='exam_attempts:'+paperKey(); localStorage.setItem(k, JSON.stringify(obj||{})); }catch(e){} }
   function parseMarkdown(md){
     var lines = textToLines(md), i=0, res=[]; var paperTitle='试卷';
     var currentSubject=''; var currentSection='';
@@ -144,6 +146,7 @@
     if(!container) return; if(!p.questions || p.questions.length===0){ empty && empty.classList.remove('hidden'); return; }
     empty && empty.classList.add('hidden');
     var prof = loadProf();
+    var attempts = loadAttempts();
     container.innerHTML = p.questions.map(function(q,idx){
       var tagsHTML = (q.tags||[]).map(function(t){
         var href = mapTag(t);
@@ -161,7 +164,8 @@
       var learnHref = null; (q.tags||[]).some(function(t){ var h = mapTag(t); if(h){ var paper = qs('paper')||''; var parts = String(h).split('#'); var base=parts[0]; var hash = parts[1]?('#'+parts[1]):''; var ref = '/exam-viewer.html?paper='+encodeURIComponent(paper)+'&goto='+idx; var join = base.indexOf('?')>-1 ? '&' : '?'; learnHref = base + join + 'ref='+ encodeURIComponent(ref) + hash; return true; } return false; });
       var optsHTML = (q.options||[]).length?('<div class="q-options">'+q.options.map(function(o){ return '<div>'+esc(o)+'</div>'; }).join('')+'</div>'):'';
       var meta = [q.difficulty?('难度：'+q.difficulty):'', (q.knowledge||'')].filter(Boolean).join(' · ');
-      var solBtn = '<div class="q-ops"><button class="btn btn-sol" data-toggle="sol" data-idx="'+idx+'">解析</button>'+ (learnHref?('<a class="btn" href="'+learnHref+'">去学</a>'):'') +'</div>';
+      var cnt = parseInt(attempts[String(idx)]||0,10);
+      var solBtn = '<div class="q-ops"><button class="btn btn-sol" data-toggle="sol" data-idx="'+idx+'">解析</button>'+ (learnHref?('<a class="btn" href="'+learnHref+'">去学</a>'):'') +'<button class="btn" data-attempt="'+idx+'">记录一次</button><button class="btn" data-unattempt="'+idx+'">撤销一次</button><button class="btn" data-resetattempt="'+idx+'">清零</button><span class="pill" id="attempt-'+idx+'">已练：'+cnt+' 次</span></div>';
       var sol = (function(){ var ans = q.answer?('<div><strong>答案：</strong>'+ esc(q.answer) +'</div>') : ''; var body = renderMd(q.solution || '解析占位（待补充）'); return '<div class="q-solution hidden" id="sol-'+idx+'">'+ ans +'<div class="md-body">'+ body +'</div></div>'; })();
       var r = parseInt(prof[String(idx)]||0,10);
       var labels = {1:'初看懂',2:'仿着做',3:'查资料',4:'独立解',5:'能迁移'};
@@ -181,7 +185,10 @@
       container.addEventListener('click', function(e){
         var t=e.target;
         if(t && t.dataset && t.dataset.toggle==='sol'){ var idx=t.dataset.idx; var el=document.getElementById('sol-'+idx); if(el){ el.classList.toggle('hidden'); } }
-        if(t && t.dataset && t.dataset.rating){ var idx=t.dataset.idx; var level=parseInt(t.dataset.rating,10)||0; var prof=loadProf(); prof[String(idx)]=level; saveProf(prof); var peers = container.querySelectorAll('.q-rate [data-idx="'+idx+'"]'); peers.forEach(function(el){ el.classList.toggle('active', el.dataset.rating==String(level)); }); }
+        if(t && t.dataset && t.dataset.rating){ var idx=t.dataset.idx; var level=parseInt(t.dataset.rating,10)||0; var prof=loadProf(); prof[String(idx)]=level; saveProf(prof); var group=t.closest('.q-rate'); var peers = group? group.querySelectorAll('[data-rating]') : container.querySelectorAll('.q-rate [data-idx="'+idx+'"]'); peers.forEach(function(el){ el.classList.toggle('active', el.dataset.rating==String(level)); }); }
+        if(t && t.dataset && t.dataset.attempt){ var idx=t.dataset.attempt; var attempts=loadAttempts(); var n=parseInt(attempts[String(idx)]||0,10)+1; attempts[String(idx)]=n; saveAttempts(attempts); var el=document.getElementById('attempt-'+idx); if(el){ el.textContent='已练：'+n+' 次'; } }
+        if(t && t.dataset && t.dataset.unattempt){ var idx=t.dataset.unattempt; var attempts=loadAttempts(); var n=parseInt(attempts[String(idx)]||0,10)-1; if(n<0) n=0; attempts[String(idx)]=n; saveAttempts(attempts); var el=document.getElementById('attempt-'+idx); if(el){ el.textContent='已练：'+n+' 次'; } }
+        if(t && t.dataset && t.dataset.resetattempt){ var idx=t.dataset.resetattempt; var attempts=loadAttempts(); attempts[String(idx)]=0; saveAttempts(attempts); var el=document.getElementById('attempt-'+idx); if(el){ el.textContent='已练：0 次'; } }
       });
     }
     if(toggleAll){ toggleAll.addEventListener('click', function(){ var els = container.querySelectorAll('.q-solution'); els.forEach(function(el){ el.classList.toggle('hidden'); }); }); }
@@ -203,6 +210,7 @@
     }
     return new Promise(function(resolve,reject){ next(resolve,reject); });
   }
+  try{ window.ExamsParse = parseMarkdown; window.ExamsRenderMd = renderMd; }catch(e){}
   document.addEventListener('DOMContentLoaded', function(){
     var paper = qs('paper'); var titleEl=document.getElementById('paper-title'); if(!paper){
       fetch('/_papers.json').then(function(r){ return r.json(); }).then(function(list){

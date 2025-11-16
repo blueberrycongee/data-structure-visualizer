@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>刷题筛选</title>
+  <link rel="stylesheet" href="assets/css/home.css">
+  <link rel="stylesheet" href="assets/css/theme.css">
+  <style>
+    .content-section { margin: 28px 10px; }
+    .toolbar { display:flex; gap:12px; align-items:center; margin: 0 10px 16px 10px; }
+    .pill { display:inline-flex; align-items:center; padding:6px 10px; border-radius:16px; border:1px solid #e6eaf2; background:#f8f9fa; margin:4px; font-size:13px; cursor:pointer; }
+    .pill:hover { background:#eef6ff; border-color:#00c6ff; color:#0072ff; }
+    .question { background:#fff; border:1px solid #e6eaf2; border-radius:12px; padding:16px; margin:12px 0; }
+    .q-title { font-weight:600; margin-bottom:8px; }
+    .q-meta { font-size:13px; opacity:0.8; margin-bottom:8px; }
+    .q-body { margin:8px 0; line-height:1.7; }
+    .q-options { margin:8px 0 4px 0; }
+    .q-solution { margin-top:8px; }
+    .q-tags { margin-top:8px; }
+    .q-ops { display:flex; gap:8px; margin-top:8px; }
+    .btn { padding:6px 10px; border:1px solid #e6eaf2; background:#f8f9fa; border-radius:8px; cursor:pointer; }
+    .btn:hover { background:#eef6ff; border-color:#00c6ff; color:#0072ff; }
+    .hidden { display:none; }
+    .pill.active { background:#dff1ff; border-color:#00aaff; color:#0066cc; }
+  </style>
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']], processEscapes: true }, svg: { fontCache: 'global' } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+</head>
+<body>
+  <div class="home-container">
+    <header class="header">
+      <a href="exams.html" class="back-link" style="position:absolute;left:20px;top:20px;">← 返回试卷列表</a>
+      <h1>刷题筛选</h1>
+      <p class="subtitle">按熟练度直接展示符合条件的题目</p>
+    </header>
+    <main class="main-content">
+      <section class="data-structure-section content-section">
+        <div class="toolbar" id="filter-toolbar"></div>
+        <div class="toolbar">
+          <input id="search" class="search" placeholder="按关键词或标签过滤">
+          <button id="toggleAnswers" class="btn">切换显示答案与解析</button>
+        </div>
+        <section class="content-section" id="questions"></section>
+        <div id="empty" class="notice" style="display:none;">未找到符合条件的题目</div>
+      </section>
+    </main>
+    <footer class="footer"><p>刷题筛选 © 2025</p></footer>
+  </div>
+  <script src="assets/js/exams.js"></script>
+  <script src="assets/js/filter.js"></script>
+  <script src="assets/js/theme.js"></script>
+</body>
+</html>
